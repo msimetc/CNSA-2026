@@ -1,0 +1,2087 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>학업 설계 프로그램</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',sans-serif;background:#f0f2f5;color:#1a1a2e;font-size:14px;min-height:100vh}
+header{background:#1a237e;color:#fff;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+header .hd-left{display:flex;align-items:center;gap:12px}
+header h1{font-size:17px;font-weight:700;letter-spacing:-.3px}
+header .subtitle{font-size:11px;opacity:.75;margin-top:2px}
+header .proto-badge{background:#e53935;padding:2px 9px;border-radius:10px;font-size:10px;font-weight:700;letter-spacing:.5px}
+header .year-badge{background:#ffd54f;color:#1a237e;padding:3px 12px;border-radius:12px;font-size:13px;font-weight:800;letter-spacing:-.2px;box-shadow:0 1px 4px rgba(0,0,0,.25)}
+
+.page{display:grid;grid-template-columns:1fr 310px;min-height:calc(100vh - 52px)}
+
+/* ── LEFT ─────────────────────── */
+.left{padding:16px;overflow-y:auto}
+
+.curr-bar{background:#fff;border-radius:8px;padding:12px 16px;margin-bottom:14px;border:1px solid #e0e0e0;display:flex;align-items:center;gap:12px}
+.curr-bar label{font-size:12px;font-weight:600;color:#666}
+.curr-select{border:1.5px solid #9fa8da;border-radius:20px;padding:5px 14px;font-size:13px;background:#fff;color:#1a237e;font-weight:600;cursor:pointer;outline:none}
+
+.sem-nav{display:flex;gap:3px;background:#fff;border-radius:8px;padding:4px;border:1px solid #e0e0e0;margin-bottom:14px}
+.sem-tab{flex:1;padding:8px 4px;text-align:center;cursor:pointer;border-radius:6px;font-size:13px;font-weight:500;color:#888;transition:all .18s;line-height:1.3}
+.sem-tab.active{background:#1a237e;color:#fff}
+.sem-tab small{display:block;font-size:10px;opacity:.75;margin-top:1px}
+
+.legend{background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:10px 14px;margin-bottom:14px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.legend span{font-size:10px;font-weight:600;color:#555}
+.lg{display:flex;align-items:center;gap:4px;font-size:11px}
+.lg-dot{display:inline-block;width:10px;height:10px;border-radius:50%}
+
+.group-card{background:#fff;border-radius:8px;border:1px solid #e0e0e0;margin-bottom:10px;overflow:hidden}
+.group-head{padding:10px 14px;background:#f8f9fa;border-bottom:1px solid #ececec;display:flex;justify-content:space-between;align-items:center}
+.group-head h3{font-size:12px;font-weight:700;color:#333}
+.group-badges{display:flex;gap:5px;align-items:center}
+.badge{padding:2px 7px;border-radius:10px;font-size:10px;font-weight:700}
+.badge-cred{background:#e3f2fd;color:#1565c0}
+.badge-sel{background:#f3e5f5;color:#6a1b9a}
+.badge-cnt{background:#fff3e0;color:#e65100}
+.badge-ok{background:#e8f5e9;color:#2e7d32}
+
+.course-grid{padding:10px 14px;display:flex;flex-wrap:wrap;gap:6px}
+.ci{position:relative}
+.ci input{display:none}
+.ci label{display:flex;align-items:center;gap:4px;cursor:pointer;padding:4px 10px;border:1.5px solid #e0e0e0;border-radius:6px;font-size:12px;transition:all .15s;user-select:none;white-space:nowrap}
+.ci label:hover{border-color:#5c6bc0;background:#f5f7ff}
+.ci input:checked~label{border-color:#3949ab;background:#e8eaf6;color:#1a237e;font-weight:600}
+
+/* required = red star */
+.ci.req label{border-color:#ef9a9a;color:#b71c1c}
+.ci.req label::before{content:'★';font-size:9px;color:#c62828;margin-right:2px}
+.ci.req input:checked~label{border-color:#c62828;background:#ffebee;color:#c62828}
+
+/* elective = blue diamond */
+.ci.elec label{border-color:#90caf9;color:#0d47a1}
+.ci.elec label::before{content:'◆';font-size:9px;color:#1565c0;margin-right:2px}
+.ci.elec input:checked~label{border-color:#1565c0;background:#e3f2fd;color:#1565c0}
+
+/* honor = orange */
+.ci.req.elec label{border-color:#ffab40;color:#bf360c}
+.ci.req.elec label::before{content:'★◆';font-size:9px;margin-right:2px}
+.ci.req.elec input:checked~label{border-color:#e65100;background:#fff3e0;color:#e65100}
+
+/* bilingual = green */
+.ci.bil label{border-color:#a5d6a7;color:#1b5e20}
+.ci.bil label::before{content:'♣';font-size:9px;color:#2e7d32;margin-right:2px}
+.ci.bil input:checked~label{border-color:#2e7d32;background:#e8f5e9;color:#2e7d32}
+
+.group-warn{padding:5px 14px;background:#fff8e1;border-top:1px solid #ffe082;font-size:10px;color:#f57f17;display:none}
+.group-warn.show{display:block}
+
+/* ── RIGHT ─────────────────────── */
+.right{background:#fff;border-left:1px solid #e0e0e0;padding:16px;overflow-y:auto;height:calc(100vh - 52px);position:sticky;top:0}
+
+.summary-box{border-radius:8px;padding:12px;text-align:center;margin-bottom:12px;transition:background .3s}
+.summary-box.fail{background:#b71c1c;color:#fff}
+.summary-box.warn{background:#e65100;color:#fff}
+.summary-box.ok{background:#1b5e20;color:#fff}
+.summary-box .s-title{font-size:11px;opacity:.85;margin-bottom:4px}
+.summary-box .s-name{font-size:16px;font-weight:700}
+.summary-box .s-status{font-size:12px;margin-top:4px;opacity:.9}
+
+.panel-section{margin-bottom:12px}
+.panel-section h3{font-size:12px;font-weight:700;color:#444;margin-bottom:8px;padding-bottom:5px;border-bottom:2px solid #e0e0e0}
+
+.cond-list{list-style:none}
+.cond-item{display:flex;align-items:flex-start;gap:6px;padding:5px 0;font-size:12px;border-bottom:1px solid #f5f5f5;border-radius:4px;transition:background .12s}
+.cond-item:hover{background:#f5f7ff}
+.cond-item:last-child{border-bottom:none}
+.cond-icon{font-size:14px;flex-shrink:0;margin-top:0}
+.cond-text{flex:1;line-height:1.4}
+.cond-sub{font-size:10px;color:#888;margin-top:1px}
+.tag-ok{color:#2e7d32}
+.tag-fail{color:#c62828}
+.tag-warn{color:#e65100}
+
+.prog-wrap{margin-top:4px}
+.prog-bar{height:5px;background:#e0e0e0;border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;border-radius:3px;transition:width .3s}
+.pf-ok{background:#43a047}
+.pf-warn{background:#fb8c00}
+.pf-fail{background:#e53935}
+
+.elec-grid{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.etag{font-size:10px;padding:2px 7px;border-radius:10px;border:1px solid}
+.etag.done{background:#e8f5e9;border-color:#a5d6a7;color:#2e7d32}
+.etag.pending{background:#f5f5f5;border-color:#e0e0e0;color:#888}
+
+.missing-wrap,.rec-wrap{margin-top:8px}
+.missing-wrap h4{font-size:11px;font-weight:700;color:#c62828;margin-bottom:5px}
+.rec-wrap h4{font-size:11px;font-weight:700;color:#1565c0;margin-bottom:5px}
+.mtag{display:inline-block;background:#ffebee;color:#c62828;padding:2px 7px;border-radius:10px;font-size:11px;margin:2px;border:1px solid #ef9a9a}
+.rtag{display:inline-block;background:#e3f2fd;color:#1565c0;padding:2px 7px;border-radius:10px;font-size:11px;margin:2px;border:1px solid #90caf9}
+
+.ext-row{display:flex;align-items:center;gap:6px;padding:4px 0;font-size:12px}
+.ext-row input[type=checkbox]{width:14px;height:14px;cursor:pointer;accent-color:#1a237e}
+.ext-row label{cursor:pointer;color:#444;flex:1}
+
+.reset-btn{width:100%;margin-top:10px;padding:7px;border:1px solid #e0e0e0;background:#fafafa;border-radius:6px;cursor:pointer;font-size:12px;color:#666}
+.reset-btn:hover{background:#eeeeee}
+
+/* ── PREREQ LOCKED / DUPLICATE ─────── */
+.ci.prereq-locked label{opacity:.38;cursor:not-allowed;border-style:dashed!important;border-color:#bdbdbd!important;color:#999!important}
+.ci.prereq-locked label::before{content:'🔒 '!important;font-size:9px}
+.ci.prereq-locked input{pointer-events:none}
+.ci.already-taken label{opacity:.4;cursor:not-allowed;border-style:dashed!important;border-color:#a5d6a7!important;color:#558b2f!important;background:#f9fbe7!important}
+.ci.already-taken label::before{content:'✔ '!important;font-size:9px;color:#2e7d32}
+.ci.already-taken input{pointer-events:none}
+
+/* ── ROADMAP MODAL ─────────────────── */
+.rm-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:999;overflow-y:auto;padding:24px 16px}
+.rm-overlay.open{display:flex;justify-content:center;align-items:flex-start}
+.rm-modal{background:#fff;border-radius:12px;width:100%;max-width:1100px;box-shadow:0 24px 64px rgba(0,0,0,.35);overflow:hidden;animation:rmIn .22s ease;margin:auto}
+@keyframes rmIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+
+.rm-hd{background:linear-gradient(135deg,#1a237e 0%,#283593 100%);color:#fff;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.rm-hd-left h2{font-size:18px;font-weight:700;letter-spacing:-.3px}
+.rm-hd-left p{font-size:11px;opacity:.75;margin-top:4px}
+.rm-hd-btns{display:flex;gap:8px;flex-shrink:0}
+.rm-btn{padding:7px 16px;border-radius:20px;border:none;cursor:pointer;font-size:12px;font-weight:700;transition:all .15s}
+.rm-btn-close{background:rgba(255,255,255,.2);color:#fff}
+.rm-btn-close:hover{background:rgba(255,255,255,.35)}
+.rm-btn-print{background:#fff;color:#1a237e}
+.rm-btn-print:hover{background:#e8eaf6}
+
+.rm-status{padding:14px 24px;border-bottom:1px solid #e0e0e0;display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:#fafafa}
+.rm-pill{padding:8px 22px;border-radius:24px;font-size:14px;font-weight:700;letter-spacing:-.2px}
+.rm-pill.ok{background:#e8f5e9;color:#1b5e20;border:2px solid #66bb6a}
+.rm-pill.fail{background:#ffebee;color:#b71c1c;border:2px solid #ef5350}
+.rm-pill.warn{background:#fff8e1;color:#e65100;border:2px solid #ffa726}
+.rm-chips{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.rm-chip{font-size:11px;padding:4px 11px;border-radius:12px;font-weight:600}
+
+.rm-grid{display:grid;grid-template-columns:repeat(4,1fr)}
+.rm-col{border-right:1px solid #eee;padding:18px 14px;min-height:300px}
+.rm-col:last-child{border-right:none}
+.rm-col-hd{text-align:center;margin-bottom:14px;padding-bottom:10px;border-bottom:2.5px solid #1a237e}
+.rm-col-hd .cs{font-size:13px;font-weight:700;color:#1a237e}
+.rm-col-hd .cc{font-size:10px;color:#999;margin-top:3px}
+.rm-grp{margin-bottom:12px}
+.rm-grp-lbl{font-size:9px;font-weight:700;color:#bbb;letter-spacing:.6px;text-transform:uppercase;margin-bottom:5px;padding-left:2px}
+.rm-course{display:flex;align-items:center;gap:5px;padding:5px 9px;border-radius:6px;margin-bottom:4px;font-size:11.5px;font-weight:500;line-height:1.35;word-break:keep-all}
+.rm-icon{font-size:9px;flex-shrink:0}
+.c-req{background:#ffebee;color:#c62828;border:1.5px solid #ef9a9a}
+.c-elec{background:#e3f2fd;color:#1565c0;border:1.5px solid #90caf9}
+.c-bil{background:#e8f5e9;color:#1b5e20;border:1.5px solid #a5d6a7}
+.c-opt{background:#f3e5f5;color:#6a1b9a;border:1.5px solid #ce93d8}
+.c-none{background:#f5f5f5;color:#555;border:1.5px solid #e0e0e0}
+
+.rm-footer{padding:13px 24px;background:#f8f9fa;border-top:1px solid #e0e0e0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:10.5px;color:#999}
+.rm-legend{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.rm-leg{display:flex;align-items:center;gap:4px;font-size:11px}
+.rm-leg-dot{width:9px;height:9px;border-radius:50%;border:1.5px solid}
+
+/* header roadmap button */
+.rm-open-btn{padding:7px 16px;border-radius:20px;border:2px solid rgba(255,255,255,.35);background:transparent;color:#fff;cursor:pointer;font-size:12px;font-weight:700;transition:all .2s;white-space:nowrap}
+.rm-open-btn:hover{background:rgba(255,255,255,.18)}
+.rm-open-btn.ready{border-color:#66bb6a;background:rgba(76,175,80,.28);animation:glow 1.8s ease infinite}
+@keyframes glow{0%,100%{box-shadow:0 0 0 0 rgba(102,187,106,.55)}55%{box-shadow:0 0 0 7px rgba(102,187,106,0)}}
+
+.rm-empty{color:#ddd;font-size:11px;text-align:center;padding:12px 0}
+
+/* ── REC ROADMAP POPUP ──────────────────── */
+.rr-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1500;overflow-y:auto;padding:20px 16px}
+.rr-overlay.open{display:flex;justify-content:center;align-items:flex-start}
+.rr-modal{background:#fff;border-radius:12px;width:100%;max-width:940px;box-shadow:0 24px 64px rgba(0,0,0,.35);overflow:hidden;animation:rrIn .22s ease;margin:auto}
+@keyframes rrIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.rr-hd{background:linear-gradient(135deg,#283593 0%,#3949ab 100%);color:#fff;padding:16px 20px;display:flex;align-items:center;justify-content:space-between}
+.rr-title{font-size:16px;font-weight:700;letter-spacing:-.3px}
+.rr-sub{font-size:10px;opacity:.7;margin-top:3px}
+.rr-close-btn{background:rgba(255,255,255,.2);border:none;color:#fff;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:14px;line-height:1;flex-shrink:0;transition:.15s}
+.rr-close-btn:hover{background:rgba(255,255,255,.35)}
+.rr-prog-bar{padding:10px 20px;background:#fafafa;border-bottom:1px solid #e0e0e0;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.rr-prog-bar label{font-size:12px;font-weight:600;color:#555}
+.rr-prog-sel{border:1.5px solid #9fa8da;border-radius:16px;padding:4px 12px;font-size:13px;color:#1a237e;font-weight:600;background:#fff;cursor:pointer;outline:none}
+.rr-apply-btn{margin-left:auto;padding:6px 18px;background:#1b5e20;color:#fff;border:none;border-radius:16px;cursor:pointer;font-size:12px;font-weight:700;transition:.15s}
+.rr-apply-btn:hover{background:#2e7d32}
+.rr-note{padding:6px 20px;background:#fff8e1;border-bottom:1px solid #ffe082;font-size:10.5px;color:#e65100}
+.rr-grid{display:grid;grid-template-columns:repeat(4,1fr)}
+.rr-col{border-right:1px solid #eee;padding:14px 12px;min-height:200px}
+.rr-col:last-child{border-right:none;background:#fafafa}
+.rr-col-hd{text-align:center;margin-bottom:10px;padding-bottom:8px;border-bottom:2px solid #3949ab}
+.rr-col-hd .rr-sem{font-size:12px;font-weight:700;color:#283593}
+.rr-col-hd .rr-no-data{font-size:9px;color:#aaa;margin-top:2px}
+.rr-grp{margin-bottom:8px}
+.rr-grp-lbl{font-size:9px;font-weight:700;color:#bbb;letter-spacing:.5px;margin-bottom:3px}
+.rr-course{padding:3px 7px;border-radius:5px;font-size:11px;margin-bottom:2px;display:flex;align-items:center;gap:4px;word-break:keep-all;line-height:1.3}
+.rr-c-kor{background:#fff3e0;color:#e65100;border:1px solid #ffcc80}
+.rr-c-mat{background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7}
+.rr-c-eng{background:#e3f2fd;color:#1565c0;border:1px solid #90caf9}
+.rr-c-req{background:#ffebee;color:#c62828;border:1px solid #ef9a9a}
+.rr-c-elec{background:#ede7f6;color:#4527a0;border:1px solid #b39ddb}
+.rr-c-bil{background:#e8f5e9;color:#1b5e20;border:1px solid #a5d6a7}
+.rr-c-opt{background:#f3e5f5;color:#6a1b9a;border:1px solid #ce93d8}
+.rr-c-other{background:#f5f5f5;color:#555;border:1px solid #e0e0e0}
+.rr-c-individual{background:#fffde7;color:#9e7a00;border:1.5px dashed #e0c840;font-style:italic}
+.rr-empty{color:#bbb;font-size:11px;text-align:center;padding:20px 0}
+.rr-open-btn{width:100%;margin-bottom:10px;padding:7px;border:1.5px solid #9fa8da;background:#f5f7ff;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;color:#283593;transition:.15s}
+.rr-open-btn:hover{background:#e8eaf6;border-color:#5c6bc0}
+
+/* ── TUTORIAL POPUP ──────────────────── */
+.tut-overlay{display:none;position:fixed;inset:0;background:rgba(10,15,40,.72);z-index:9000;align-items:center;justify-content:center;padding:16px}
+.tut-overlay.open{display:flex}
+.tut-modal{background:#fff;border-radius:16px;width:100%;max-width:480px;box-shadow:0 28px 72px rgba(0,0,0,.38);overflow:hidden;animation:tutIn .25s ease}
+@keyframes tutIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+
+.tut-hd{background:linear-gradient(135deg,#1a237e 0%,#283593 100%);color:#fff;padding:14px 20px;display:flex;align-items:center;justify-content:space-between}
+.tut-hd-left{display:flex;align-items:center;gap:10px}
+.tut-badge{background:rgba(255,255,255,.22);padding:2px 10px;border-radius:10px;font-size:11px;font-weight:700;letter-spacing:.4px}
+.tut-step-lbl{font-size:11px;opacity:.75}
+.tut-skip{background:transparent;border:1px solid rgba(255,255,255,.35);color:#fff;padding:3px 10px;border-radius:8px;cursor:pointer;font-size:11px;transition:.15s}
+.tut-skip:hover{background:rgba(255,255,255,.18)}
+
+.tut-body{padding:28px 24px 20px;min-height:290px}
+.tut-step{display:none;animation:tutFade .2s ease}
+.tut-step.active{display:block}
+@keyframes tutFade{from{opacity:0;transform:translateX(12px)}to{opacity:1;transform:translateX(0)}}
+.tut-icon{font-size:36px;margin-bottom:10px;line-height:1}
+.tut-title{font-size:17px;font-weight:700;color:#1a237e;margin-bottom:8px;letter-spacing:-.3px}
+.tut-desc{font-size:13px;color:#555;line-height:1.65;margin-bottom:16px}
+
+.tut-card{background:#f8f9ff;border:1.5px solid #c5cae9;border-radius:10px;padding:14px 16px;margin-bottom:10px}
+.tut-card-tag{display:inline-block;background:#1a237e;color:#fff;font-size:10px;font-weight:700;padding:1px 8px;border-radius:6px;margin-bottom:8px;letter-spacing:.3px}
+.tut-card h4{font-size:13px;font-weight:700;color:#1a237e;margin-bottom:5px}
+.tut-card p{font-size:12px;color:#555;line-height:1.55;margin:0}
+
+.tut-mock-bar{background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:9px 14px;display:flex;align-items:center;gap:10px;margin-top:8px}
+.tut-mock-select{border:1.5px solid #9fa8da;border-radius:16px;padding:4px 12px;font-size:12px;color:#1a237e;font-weight:600;background:#f5f7ff}
+.tut-mock-btn{background:#1a237e;color:#fff;border:none;border-radius:14px;padding:4px 12px;font-size:11px;font-weight:700;cursor:default}
+
+.tut-markers{display:flex;flex-direction:column;gap:7px;margin-top:4px}
+.tut-marker{display:flex;align-items:center;gap:8px;font-size:12px}
+.tut-marker-badge{min-width:28px;text-align:center;font-size:11px;font-weight:700;padding:2px 6px;border-radius:5px;border:1.5px solid}
+.tm-req{background:#ffebee;color:#c62828;border-color:#ef9a9a}
+.tm-elec{background:#e3f2fd;color:#1565c0;border-color:#90caf9}
+.tm-bil{background:#e8f5e9;color:#1b5e20;border-color:#a5d6a7}
+.tm-both{background:#fff3e0;color:#bf360c;border-color:#ffcc80}
+.tm-lock{background:#f5f5f5;color:#999;border-color:#e0e0e0;font-size:9px}
+.tut-marker span{color:#444;line-height:1.4}
+
+.tut-footer{padding:14px 20px 18px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid #f0f0f0}
+.tut-dots{display:flex;gap:6px}
+.tut-dot{width:8px;height:8px;border-radius:50%;background:#e0e0e0;transition:.2s;cursor:pointer}
+.tut-dot.active{background:#1a237e;width:22px;border-radius:4px}
+.tut-btns{display:flex;gap:8px}
+.tut-btn{padding:7px 18px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-weight:700;transition:.15s}
+.tut-btn-prev{background:#f5f5f5;color:#555}
+.tut-btn-prev:hover{background:#eeeeee}
+.tut-btn-next{background:#1a237e;color:#fff}
+.tut-btn-next:hover{background:#283593}
+.tut-btn-done{background:#1b5e20;color:#fff}
+.tut-btn-done:hover{background:#2e7d32}
+
+/* ── ERROR POPUP ─────────────────────── */
+.err-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;align-items:center;justify-content:center;padding:16px}
+.err-overlay.open{display:flex}
+.err-modal{background:#fff;border-radius:12px;width:100%;max-width:520px;box-shadow:0 24px 64px rgba(0,0,0,.35);overflow:hidden;animation:errIn .2s ease}
+@keyframes errIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+.err-hd{background:#b71c1c;color:#fff;padding:16px 20px;display:flex;align-items:center;gap:10px}
+.err-hd-icon{font-size:22px;flex-shrink:0}
+.err-hd-text h3{font-size:15px;font-weight:700}
+.err-hd-text p{font-size:11px;opacity:.8;margin-top:2px}
+.err-body{padding:18px 20px}
+.err-msg{background:#ffebee;border:1px solid #ef9a9a;border-radius:8px;padding:12px 14px;font-size:13px;color:#c62828;word-break:break-word;margin-bottom:12px;line-height:1.5}
+.err-detail-toggle{font-size:11px;color:#1565c0;cursor:pointer;margin-bottom:6px;user-select:none}
+.err-stack{display:none;background:#f5f5f5;border-radius:6px;padding:10px 12px;font-size:10.5px;font-family:monospace;color:#555;white-space:pre-wrap;word-break:break-all;max-height:160px;overflow-y:auto;margin-bottom:10px}
+.err-stack.open{display:block}
+.err-meta{font-size:10px;color:#aaa;margin-bottom:14px}
+.err-btns{display:flex;gap:8px;justify-content:flex-end}
+.err-btn{padding:7px 16px;border-radius:6px;border:none;cursor:pointer;font-size:12px;font-weight:700;transition:all .15s}
+.err-btn-copy{background:#e3f2fd;color:#1565c0}
+.err-btn-copy:hover{background:#bbdefb}
+.err-btn-refresh{background:#e8f5e9;color:#2e7d32}
+.err-btn-refresh:hover{background:#c8e6c9}
+.err-btn-close{background:#ffebee;color:#c62828}
+.err-btn-close:hover{background:#ffcdd2}
+
+@media print{
+  @page{size:A4 landscape;margin:.7cm .9cm}
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+  html,body{height:auto!important;overflow:visible!important;background:#fff!important}
+  header,.left,.right,.page{display:none!important}
+  .rm-overlay{display:block!important;position:static!important;background:none!important;padding:0!important;overflow:visible!important;height:auto!important}
+  .rm-modal{box-shadow:none!important;border-radius:0!important;max-width:none!important;width:100%!important;overflow:visible!important}
+  .rm-hd{padding:10px 16px!important}
+  .rm-hd-left h2{font-size:13px!important}
+  .rm-hd-left p{font-size:9px!important}
+  .rm-hd-btns{display:none!important}
+  .rm-status{padding:8px 16px!important}
+  .rm-pill{font-size:11px!important;padding:5px 13px!important}
+  .rm-chip{font-size:9px!important;padding:2px 7px!important}
+  .rm-grid{grid-template-columns:repeat(4,1fr)!important;page-break-inside:avoid!important}
+  .rm-col{padding:10px 9px!important;min-height:auto!important}
+  .rm-col-hd{margin-bottom:7px!important;padding-bottom:6px!important}
+  .rm-col-hd .cs{font-size:11px!important}
+  .rm-col-hd .cc{font-size:8px!important}
+  .rm-grp{margin-bottom:6px!important}
+  .rm-grp-lbl{font-size:7px!important;margin-bottom:3px!important}
+  .rm-course{padding:3px 6px!important;margin-bottom:2px!important;font-size:8.5px!important;line-height:1.2!important}
+  .rm-icon{font-size:7px!important}
+  .rm-footer{padding:7px 16px!important;font-size:8.5px!important}
+  .rm-open-btn,.proto-badge{display:none!important}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="hd-left">
+    <div>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <h1>학업 설계 프로그램</h1>
+        <span class="year-badge">2026학년도 입학생</span>
+        <span class="proto-badge">PROTOTYPE</span>
+      </div>
+      <div class="subtitle">충남삼성고등학교</div>
+    </div>
+  </div>
+  <button class="rm-open-btn" id="rmOpenBtn" onclick="showRoadmap()">📋 나의 로드맵 보기</button>
+</header>
+
+<div class="page">
+  <!-- LEFT -->
+  <div class="left">
+    <div class="curr-bar">
+      <label>디플로마 과정 선택</label>
+      <select class="curr-select" id="currSelect" onchange="switchProgram()">
+        <option value="수학">수학</option>
+        <option value="물리학">물리학</option>
+        <option value="화학">화학</option>
+        <option value="생명과학">생명과학</option>
+        <option value="공학">공학</option>
+        <option value="IT">IT</option>
+        <option value="인문학">인문학</option>
+        <option value="국제어문">국제어문</option>
+        <option value="사회과학">사회과학</option>
+        <option value="경제경영">경제경영</option>
+        <option value="예술">예술</option>
+        <option value="체육">체육</option>
+        <option value="국제자연과학">국제자연과학</option>
+        <option value="국제인문사회">국제인문사회</option>
+      </select>
+    </div>
+
+    <div class="sem-nav" id="semNav"></div>
+
+    <div class="legend">
+      <span>과목 표시 안내</span>
+      <div class="lg"><span style="color:#c62828;font-size:11px">★</span><span>필수 과목</span></div>
+      <div class="lg"><span style="color:#1565c0;font-size:11px">◆</span><span id="elecLegend">선택 과목(9개 중 4개)</span></div>
+      <div class="lg"><span style="color:#2e7d32;font-size:11px">♣</span><span>이중언어 디플로마 관련</span></div>
+      <div class="lg" style="font-size:11px;color:#999">★◆ 표시 = 선택군 필수+선택 중복</div>
+    </div>
+
+    <div id="semContent"></div>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="right">
+    <div class="summary-box fail" id="summaryBox">
+      <div class="s-title" id="summaryTitle">수학 디플로마</div>
+      <div class="s-name" id="summaryStatus">이수 불가</div>
+      <div class="s-status" id="summaryDetail">과목을 선택해 주세요</div>
+    </div>
+
+    <button class="rr-open-btn" onclick="showRoadmapRec()">📚 추천 로드맵 보기</button>
+
+    <div class="panel-section">
+      <h3>✅ 필수 과목 충족 현황</h3>
+      <ul class="cond-list" id="reqList"></ul>
+    </div>
+
+    <div class="panel-section">
+      <h3>◆ 선택 과목 충족 현황 <span id="elecCountBadge" style="color:#e65100;font-weight:700"></span></h3>
+      <div id="elecContent"></div>
+    </div>
+
+    <div class="panel-section">
+      <h3>📋 비교과 이수 조건</h3>
+      <div id="extList">
+        <div class="ext-row"><input type="checkbox" id="ext1" onchange="updateDiploma()"><label for="ext1">MSMP 이수</label></div>
+        <div class="ext-row"><input type="checkbox" id="ext2" onchange="updateDiploma()"><label for="ext2">봉사활동 30시간 이상</label></div>
+        <div class="ext-row"><input type="checkbox" id="ext3" onchange="updateDiploma()"><label for="ext3">진로활동 16시간 이상</label></div>
+        <div class="ext-row"><input type="checkbox" id="ext4" onchange="updateDiploma()"><label for="ext4">탐구 산출물 제출 및 학술제 참여</label></div>
+        <div class="ext-row"><input type="checkbox" id="ext5" onchange="updateDiploma()"><label for="ext5">1인1기 출석률 80% 이상</label></div>
+      </div>
+    </div>
+
+    <div class="panel-section" id="creditSection">
+      <h3>📊 국·영·수 이수 학점 <span id="creditOverBadge" style="font-size:10px;color:#c62828;font-weight:700"></span></h3>
+      <div id="creditContent"></div>
+    </div>
+
+    <div class="panel-section" id="honorSection">
+      <h3>🏅 고급 디플로마 조건</h3>
+      <ul class="cond-list" id="honorList"></ul>
+    </div>
+
+    <div class="panel-section" id="bilingualSection">
+      <h3>🌐 이중언어 디플로마 조건</h3>
+      <ul class="cond-list" id="bilingualList"></ul>
+    </div>
+
+    <div class="panel-section" id="missingSection" style="display:none">
+      <h3>⚠️ 부족한 조건</h3>
+      <div id="missingContent"></div>
+    </div>
+
+    <div class="panel-section" id="recSection" style="display:none">
+      <h3>💡 추천 보완 과목</h3>
+      <div id="recContent"></div>
+    </div>
+
+    <button class="reset-btn" onclick="resetAll()">🔄 전체 선택 초기화</button>
+  </div>
+</div>
+
+<!-- ── ROADMAP MODAL ── -->
+<div class="rm-overlay" id="rmOverlay" onclick="handleOverlayClick(event)">
+  <div class="rm-modal">
+    <div class="rm-hd">
+      <div class="rm-hd-left">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <h2>📋 나의 수강 로드맵</h2>
+          <span style="background:#ffd54f;color:#1a237e;padding:2px 11px;border-radius:11px;font-size:12px;font-weight:800">2026학년도 입학생</span>
+        </div>
+        <p id="rmSubtitle">충남삼성고등학교 · 수학 디플로마</p>
+      </div>
+      <div class="rm-hd-btns">
+        <button class="rm-btn rm-btn-print" onclick="window.print()">🖨️ 인쇄</button>
+        <button class="rm-btn rm-btn-close" onclick="closeRoadmap()">✕ 닫기</button>
+      </div>
+    </div>
+    <div class="rm-status" id="rmStatus"></div>
+    <div class="rm-grid" id="rmGrid"></div>
+    <div class="rm-footer">
+      <div class="rm-legend">
+        <span style="font-weight:600;color:#888">표시 안내</span>
+        <div class="rm-leg"><div class="rm-leg-dot" style="background:#ffebee;border-color:#ef9a9a"></div><span style="color:#c62828">★ 필수과목</span></div>
+        <div class="rm-leg"><div class="rm-leg-dot" style="background:#e3f2fd;border-color:#90caf9"></div><span style="color:#1565c0">◆ 선택과목</span></div>
+        <div class="rm-leg"><div class="rm-leg-dot" style="background:#e8f5e9;border-color:#a5d6a7"></div><span style="color:#1b5e20">♣ 이중언어</span></div>
+        <div class="rm-leg"><div class="rm-leg-dot" style="background:#f3e5f5;border-color:#ce93d8"></div><span style="color:#6a1b9a">+ 순증선택</span></div>
+        <div class="rm-leg"><div class="rm-leg-dot" style="background:#f5f5f5;border-color:#e0e0e0"></div><span>일반과목</span></div>
+      </div>
+      <div>학업 설계 프로그램 · 2026 입학생</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── TUTORIAL POPUP ── -->
+<div class="tut-overlay" id="tutOverlay">
+  <div class="tut-modal">
+    <div class="tut-hd">
+      <div class="tut-hd-left">
+        <span class="tut-badge">사용 안내</span>
+        <span class="tut-step-lbl" id="tutStepLbl">1 / 4</span>
+      </div>
+      <button class="tut-skip" onclick="closeTutorial()">건너뛰기 ✕</button>
+    </div>
+    <div class="tut-body">
+
+      <!-- Step 1: 과정 선택 -->
+      <div class="tut-step active" id="tutStep1">
+        <div class="tut-icon">🎓</div>
+        <div class="tut-title">디플로마 과정을 선택하세요</div>
+        <p class="tut-desc">먼저 본인이 목표로 하는 <b>디플로마 과정</b>을 선택합니다.<br>수학·물리학·IT·경제경영 등 총 14개 과정 중 하나를 고르면 해당 과정의 이수 조건이 자동으로 설정됩니다.</p>
+        <div class="tut-card">
+          <span class="tut-card-tag">STEP 1</span>
+          <div class="tut-mock-bar">
+            <span style="font-size:12px;font-weight:600;color:#666">디플로마 과정 선택</span>
+            <span class="tut-mock-select">수학 ▾</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: 이수 조건 확인 -->
+      <div class="tut-step" id="tutStep2">
+        <div class="tut-icon">✅</div>
+        <div class="tut-title">오른쪽에서 이수 조건을 확인하세요</div>
+        <p class="tut-desc">과정을 선택하면 오른쪽 패널에 이수 조건이 표시됩니다. 과목을 선택할 때마다 실시간으로 충족 여부가 업데이트됩니다.</p>
+        <div class="tut-card" style="margin-bottom:7px">
+          <span class="tut-card-tag">필수 교과</span>
+          <p>★ 표시 과목을 모두 이수해야 합니다.</p>
+        </div>
+        <div class="tut-card" style="margin-bottom:7px">
+          <span class="tut-card-tag">선택 교과</span>
+          <p>◆ 표시 과목 중 정해진 수 이상을 이수해야 합니다.</p>
+        </div>
+        <div class="tut-card">
+          <span class="tut-card-tag">비교과 이수 조건</span>
+          <p>MSMP, 봉사활동, 진로활동, 학술제 참여, 1인1기 출석률을 체크하세요.</p>
+        </div>
+      </div>
+
+      <!-- Step 3: 과목 표시 안내 -->
+      <div class="tut-step" id="tutStep3">
+        <div class="tut-icon">📚</div>
+        <div class="tut-title">학기별로 과목을 선택하세요</div>
+        <p class="tut-desc">2학년 1학기부터 3학년 2학기까지 탭을 눌러 각 학기 과목을 선택합니다. 과목 표시를 확인해 우선순위를 정하세요.</p>
+        <div class="tut-markers">
+          <div class="tut-marker"><span class="tut-marker-badge tm-req">★</span><span><b>필수 과목</b> — 반드시 이수해야 하는 과목</span></div>
+          <div class="tut-marker"><span class="tut-marker-badge tm-elec">◆</span><span><b>선택 과목</b> — 이수 선택군에서 골라야 하는 과목</span></div>
+          <div class="tut-marker"><span class="tut-marker-badge tm-bil">♣</span><span><b>이중언어</b> — 이중언어 디플로마 관련 과목</span></div>
+          <div class="tut-marker"><span class="tut-marker-badge tm-both">★◆</span><span><b>필수+선택 중복</b> — 선택군이면서 필수인 과목</span></div>
+          <div class="tut-marker"><span class="tut-marker-badge tm-lock">🔒</span><span><b>선수과목 미이수</b> — 이전 과목을 먼저 이수해야 선택 가능</span></div>
+        </div>
+      </div>
+
+      <!-- Step 4: 로드맵 보기 -->
+      <div class="tut-step" id="tutStep4">
+        <div class="tut-icon">🗺️</div>
+        <div class="tut-title">나의 로드맵을 확인하세요</div>
+        <p class="tut-desc">모든 조건을 충족하면 상단의 버튼이 초록색으로 빛납니다. 클릭하면 4학기 전체 수강 로드맵과 이수 현황을 한눈에 확인하고 <b>PDF로 저장</b>할 수 있습니다.</p>
+        <div class="tut-card">
+          <span class="tut-card-tag">FINAL STEP</span>
+          <div class="tut-mock-bar" style="justify-content:flex-end">
+            <span class="tut-mock-btn">✅ 나의 로드맵 보기</span>
+          </div>
+          <p style="margin-top:10px;font-size:11px;color:#888">모든 조건 충족 시 버튼이 초록색으로 강조됩니다.</p>
+        </div>
+      </div>
+
+    </div>
+    <div class="tut-footer">
+      <div class="tut-dots">
+        <span class="tut-dot active" onclick="goTutStep(1)"></span>
+        <span class="tut-dot" onclick="goTutStep(2)"></span>
+        <span class="tut-dot" onclick="goTutStep(3)"></span>
+        <span class="tut-dot" onclick="goTutStep(4)"></span>
+      </div>
+      <div class="tut-btns">
+        <button class="tut-btn tut-btn-prev" id="tutPrevBtn" onclick="tutPrev()" style="display:none">← 이전</button>
+        <button class="tut-btn tut-btn-next" id="tutNextBtn" onclick="tutNext()">다음 →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── ERROR POPUP ── -->
+<div class="err-overlay" id="errOverlay">
+  <div class="err-modal">
+    <div class="err-hd">
+      <div class="err-hd-icon">⚠️</div>
+      <div class="err-hd-text">
+        <h3>오류가 발생했습니다</h3>
+        <p>학업 설계 프로그램</p>
+      </div>
+    </div>
+    <div class="err-body">
+      <div class="err-msg" id="errMsg"></div>
+      <div class="err-detail-toggle" id="errToggle" onclick="toggleErrStack()">▼ 상세 정보 보기</div>
+      <div class="err-stack" id="errStack"></div>
+      <div class="err-meta" id="errMeta"></div>
+      <div class="err-btns">
+        <button class="err-btn err-btn-copy" onclick="copyErrInfo()">📋 복사</button>
+        <button class="err-btn err-btn-refresh" onclick="location.reload()">🔄 새로고침</button>
+        <button class="err-btn err-btn-close" onclick="closeErr()">✕ 닫기</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── RECOMMENDED ROADMAP POPUP ── -->
+<div class="rr-overlay" id="rrOverlay" onclick="handleRrOverlayClick(event)">
+  <div class="rr-modal">
+    <div class="rr-hd">
+      <div>
+        <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap">
+          <div class="rr-title">📚 추천 수강 로드맵</div>
+          <span style="background:#ffd54f;color:#1a237e;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:800">2026학년도 입학생</span>
+        </div>
+        <div class="rr-sub">과정별 수강 신청 예시</div>
+      </div>
+      <button class="rr-close-btn" onclick="closeRoadmapRec()">✕</button>
+    </div>
+    <div class="rr-prog-bar">
+      <label>디플로마 과정:</label>
+      <select class="rr-prog-sel" id="rrProgSel" onchange="buildRoadmapRec()">
+        <option value="수학">수학</option>
+        <option value="물리학">물리학</option>
+        <option value="화학">화학</option>
+        <option value="생명과학">생명과학</option>
+        <option value="공학">공학</option>
+        <option value="IT">IT</option>
+        <option value="인문학">인문학</option>
+        <option value="국제어문">국제어문</option>
+        <option value="사회과학">사회과학</option>
+        <option value="경제경영">경제경영</option>
+        <option value="예술">예술</option>
+        <option value="체육">체육</option>
+        <option value="국제자연과학">국제자연과학</option>
+        <option value="국제인문사회">국제인문사회</option>
+      </select>
+      <button class="rr-apply-btn" onclick="applyRoadmapRec()">✅ 이 로드맵 적용하기</button>
+    </div>
+    <div class="rr-note">※ 학교에서 제공하는 수강 신청 예시입니다. 본인의 진로·희망 대학에 맞게 수정하여 사용하세요.</div>
+    <div class="rr-grid" id="rrGrid"></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════════════
+const ALL_DIPLOMA_RULES = {
+  수학: {
+    label: '수학 디플로마',
+    required: ['미적분Ⅱ','확률과 통계','기하','융합과학 탐구'],
+    elective: [
+      { pool:['고급 미적분','고급 대수','이산 수학','선형대수학','AP미적분학Ⅰ'], need:3, label:'선택' }
+    ],
+    honor: { courses:['고급 미적분'], need:1, label:'고급 미적분 이수 및 성취율 80% 이상' }
+  },
+  물리학: {
+    label: '물리학 디플로마',
+    required: ['물리학','역학과 에너지','전자기와 양자','융합과학 탐구'],
+    elective: [
+      { pool:['물리학 실험','고급 물리학'], need:1, label:'선택 Ⅰ' },
+      { pool:['기하','물질과 에너지','고급 미적분'], need:2, label:'선택 Ⅱ' }
+    ],
+    honor: { courses:['고급 물리학'], need:1, label:'고급 물리학 이수 및 성취율 80% 이상' }
+  },
+  화학: {
+    label: '화학 디플로마',
+    required: ['화학','물질과 에너지','화학 반응의 세계','융합과학 탐구'],
+    elective: [
+      { pool:['화학 실험','고급 화학','화학 분석','기본 유기화학','식품과 영양'], need:2, label:'선택 Ⅰ' },
+      { pool:['기초 조리','생활과학 탐구'], need:1, label:'선택 Ⅱ' }
+    ],
+    honor: { courses:['고급 화학'], need:1, label:'고급 화학 이수 및 성취율 80% 이상' }
+  },
+  생명과학: {
+    label: '생명과학 디플로마',
+    required: ['생명과학','생물의 유전','세포와 물질대사','융합과학 탐구'],
+    elective: [
+      { pool:['생명과학 실험','고급 생명과학','생명 공학 기술','농업 이해'], need:2, label:'선택 Ⅰ' },
+      { pool:['생태와 환경','기초 조리','생활과학 탐구'], need:1, label:'선택 Ⅱ' }
+    ],
+    honor: { courses:['고급 생명과학'], need:1, label:'고급 생명과학 이수 및 성취율 80% 이상' }
+  },
+  공학: {
+    label: '공학 디플로마',
+    required: ['물리학','창의 공학 설계','융합과학 탐구'],
+    elective: [
+      { pool:['지식 재산 일반','로봇과 공학세계','발명과 디자인'], need:2, label:'선택 Ⅰ' },
+      { pool:['역학과 에너지','물질과 에너지','전자기와 양자','고급 물리학','고급 미적분'], need:2, label:'선택 Ⅱ' }
+    ],
+    honor: { courses:['고급 물리학'], need:1, label:'고급 물리학 이수 및 성취율 80% 이상' }
+  },
+  IT: {
+    label: 'IT 디플로마',
+    required: ['정보과학','디지털 논리 회로','정보 통신','융합과학 탐구'],
+    elective: [
+      { pool:['자료 구조','데이터 과학','인공지능 기초'], need:2, label:'선택 Ⅰ' },
+      { pool:['컴퓨터 구조','컴퓨터 네트워크'], need:1, label:'선택 Ⅱ' }
+    ],
+    honor: { courses:['자료 구조'], need:1, label:'자료 구조 이수 및 성취율 80% 이상' }
+  },
+  인문학: {
+    label: '인문학 디플로마',
+    required: ['경제','사회문제 탐구','문학과 영상','세계사','현대사회와 윤리','소설 창작','빅 히스토리'],
+    elective: [
+      { pool:['세계 역사와 문화','사회 문제와 윤리','독서 토론과 글쓰기','논술','논리와 사고'], need:1, label:'선택' }
+    ],
+    honor: { courses:['소설 창작','빅 히스토리'], need:2, label:'소설 창작, 빅 히스토리 2과목 모두 이수 및 성취율 80% 이상' }
+  },
+  국제어문: {
+    label: '국제어문 디플로마',
+    required: ['경제','사회문제 탐구'],
+    elective: [
+      { pool:['영미 문학 읽기','일본어 회화Ⅰ','중국어 회화','심화 일본어','심화 중국어','영어 발표와 토론','영어 독해와 작문','세계 문화와 영어','중국 언어와 역사의 이해1','중국 언어와 역사의 이해2','일본어 회화Ⅱ','미디어 영어','일본 문화'], need:4, label:'선택' }
+    ],
+    honor: { courses:['영미 문학 읽기','영어 발표와 토론'], need:2, label:'영미 문학 읽기, 영어 발표와 토론 2과목 모두 이수 및 성취율 80% 이상 (또는 심화 중국어, 일본어 회화Ⅱ 중 1과목 이수 및 성취율 80% 이상)' }
+  },
+  사회과학: {
+    label: '사회과학 디플로마',
+    required: ['경제','사회문제 탐구','사회와 문화','미래 사회학','미디어와 사회'],
+    elective: [],
+    honor: { courses:['국제 정치'], need:1, label:'국제 정치 이수 및 성취율 80% 이상' }
+  },
+  경제경영: {
+    label: '경제경영 디플로마',
+    required: ['경제','사회문제 탐구','기업과 경영','현대 경제 탐구','마케팅과 광고'],
+    elective: [],
+    honor: { courses:['국제 경제'], need:1, label:'국제 경제 이수 및 성취율 80% 이상' }
+  },
+  예술: {
+    label: '예술 디플로마',
+    required: ['미디어 콘텐츠 일반','음악과 미디어'],
+    elective: [
+      { pool:['미술 매체 탐구','시각 디자인','드로잉','조형 탐구','미술 전공 실기','시창⋅청음','음악 이론','소설 창작','색채 디자인','영화 제작 실습','합창⋅합주','미술 감상과 비평','무대 미술과 기술','미술 창작','영화 감상과 비평','VR⋅AR 콘텐츠 제작','제품 디자인','도자기 공예'], need:7, label:'선택' }
+    ],
+    honor: { courses:['제품 디자인'], need:1, label:'제품 디자인 이수 및 성취율 80% 이상' }
+  },
+  체육: {
+    label: '체육 디플로마',
+    required: ['스포츠 행정 및 경영','스포츠 생리의학','기초 체육 전공 실기','스포츠 개론','심화 체육 전공 실기','육상','스포츠 경기 체력'],
+    elective: [],
+    honor: { courses:['심화 체육 전공 실기','고급 체육 전공 실기','육상','스포츠 경기 체력'], need:2, label:'심화 체육 전공 실기, 고급 체육 전공 실기, 육상, 스포츠 경기 체력 중 2과목 이수 및 성취율 80% 이상' }
+  },
+  국제자연과학: {
+    label: '국제자연과학 디플로마',
+    required: ['IB 물리학 HL Ⅰ','IB 물리학 HL Ⅱ','IB 물리학 HL Ⅲ','IB 물리학 HL Ⅳ'],
+    elective: [],
+    honor: { courses:['IB 물리학 HL Ⅰ','IB 물리학 HL Ⅱ','IB 물리학 HL Ⅲ','IB 물리학 HL Ⅳ'], need:4, label:'IB 물리학 HL 4과목 모두 이수 및 성취율 80% 이상' }
+  },
+  국제인문사회: {
+    label: '국제인문사회 디플로마',
+    required: ['IB 역사 HL Ⅰ','IB 역사 HL Ⅱ','IB 역사 HL Ⅲ','IB 역사 HL Ⅳ'],
+    elective: [],
+    honor: { courses:['IB 역사 HL Ⅰ','IB 역사 HL Ⅱ','IB 역사 HL Ⅲ','IB 역사 HL Ⅳ'], need:4, label:'IB 역사 HL 4과목 모두 이수 및 성취율 80% 이상' }
+  }
+};
+const BILINGUAL_COURSES = ['영어 발표와 토론','영미 문학 읽기'];
+const BILINGUAL_LABEL = '영어 발표와 토론 + 영미 문학 읽기 2과목 모두 이수 및 성취율 80% 이상';
+
+
+function getCurrentRules() {
+  const key = document.getElementById('currSelect')?.value || '수학';
+  return ALL_DIPLOMA_RULES[key] || ALL_DIPLOMA_RULES['수학'];
+}
+
+function getCourseTag(courseName) {
+  const rules = getCurrentRules();
+  if(rules.required.includes(courseName)) return 'req';
+  if(rules.elective.some(g => g.pool.includes(courseName))) return 'elec';
+  if(BILINGUAL_COURSES.includes(courseName)) return 'bil';
+  return '';
+}
+
+function switchProgram() {
+  Object.keys(selections).forEach(k => selections[k].clear());
+  ['ext1','ext2','ext3','ext4','ext5'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.checked = false;
+  });
+  renderSemester(currentSem);
+  renderSemNav();
+  updateDiploma();
+}
+
+const SEMESTERS = [
+{
+  id:"2-1", label:"2학년 1학기",
+  groups:[
+    { id:"g21_kor", label:"국어 선택", type:"single", credits:4, note:"1과목 선택",
+      courses:[{n:"IB 언어와 문학 SL Ⅰ"},{n:"독서와 작문"}]},
+    { id:"g21_mat", label:"수학 선택", type:"single", credits:4, note:"1과목 선택",
+      courses:[{n:"미적분Ⅰ"},{n:"IB 수학 분석과 접근 SL Ⅰ"},{n:"IB 수학 분석과 접근 HL Ⅰ"}]},
+    { id:"g21_eng", label:"영어 선택", type:"single", credits:4, note:"1과목 선택",
+      courses:[{n:"영어Ⅰ"},{n:"IB 영어 HL Ⅰ"},{n:"IB 영어 SL Ⅰ"}]},
+    { id:"g21_exp", label:"탐구활동 선택", type:"single", credits:3, note:"1과목 선택 (3학점)",
+      courses:[{n:"물리학 실험"},{n:"생명과학 실험"},{n:"정보 과제 연구"},{n:"창의 공학 설계"},{n:"화학 실험"},{n:"경제"},{n:"수학과제 탐구"},{n:"미디어 콘텐츠 일반"},{n:"스포츠 행정 및 경영"},{n:"IB 지식이론 Ⅰ"}]},
+    { id:"g21_free", label:"자유 선택", type:"multi", credits:4, maxSel:3, note:"3과목 선택 (12학점)",
+      courses:[{n:"물리학"},{n:"생명과학"},{n:"정보과학"},{n:"화학"},{n:"논술"},{n:"문학과 영상"},{n:"이산 수학"},{n:"기업과 경영"},{n:"사회와 문화"},{n:"세계사"},{n:"세계시민과 지리"},{n:"정치"},{n:"현대사회와 윤리"},{n:"기초 체육 전공 실기"},{n:"운동과 건강"},{n:"미술 매체 탐구"},{n:"스포츠 개론"},{n:"시각 디자인"},{n:"시창⋅청음"},{n:"음악 이론"},{n:"영미 문학 읽기"},{n:"일본어 회화Ⅰ"},{n:"중국어 회화"},{n:"IB 물리학 HL Ⅰ"},{n:"IB 일반화학 HL Ⅰ"},{n:"IB 일반화학 SL Ⅰ"},{n:"IB 경제 SL Ⅰ"},{n:"IB 역사 HL Ⅰ"}]},
+  ]
+},
+{
+  id:"2-2", label:"2학년 2학기",
+  groups:[
+    { id:"g22_kor", label:"국어 선택", type:"single", credits:4, note:"1과목 선택",
+      courses:[{n:"문학"},{n:"IB 언어와 문학 SL Ⅱ"}]},
+    { id:"g22_mat", label:"수학 선택", type:"single", credits:4, note:"1과목 선택",
+      courses:[{n:"확률과 통계"},{n:"IB 수학 분석과 접근 SL Ⅱ"},{n:"IB 수학 분석과 접근 HL Ⅱ"}]},
+    { id:"g22_eng", label:"영어 선택", type:"single", credits:4, note:"1과목 선택",
+      courses:[{n:"영어Ⅱ"},{n:"IB 영어 HL Ⅱ"},{n:"IB 영어 SL Ⅱ"}]},
+    { id:"g22_exp", label:"탐구활동 선택", type:"single", credits:3, note:"1과목 선택 (3학점)",
+      courses:[{n:"융합과학 탐구"},{n:"사회문제 탐구"},{n:"스포츠 생리의학"},{n:"음악과 미디어"},{n:"IB 지식이론 Ⅱ"}]},
+    { id:"g22_free", label:"자유 선택", type:"multi", credits:4, maxSel:3, note:"3과목 선택 (12학점)",
+      courses:[{n:"IB 물리학 HL Ⅱ"},{n:"IB 일반화학 HL Ⅱ"},{n:"IB 일반화학 SL Ⅱ"},{n:"물질과 에너지"},{n:"생명 공학 기술"},{n:"생물의 유전"},{n:"역학과 에너지"},{n:"자료 구조"},{n:"화학 분석"},{n:"독서 토론과 글쓰기"},{n:"소설 창작"},{n:"국제 정치"},{n:"금융과 경제생활"},{n:"현대 경제 탐구"},{n:"미래 사회학"},{n:"사회 문제와 윤리"},{n:"세계 역사와 문화"},{n:"미적분Ⅱ"},{n:"드로잉"},{n:"색채 디자인"},{n:"스포츠 경기 분석"},{n:"스포츠 교육"},{n:"심화 체육 전공 실기"},{n:"영화 제작 실습"},{n:"합창⋅합주"},{n:"IB 경제 SL Ⅱ"},{n:"IB 역사 HL Ⅱ"},{n:"심화 일본어"},{n:"심화 중국어"},{n:"영어 발표와 토론"}]},
+  ]
+},
+{
+  id:"3-1", label:"3학년 1학기",
+  groups:[
+    { id:"g31_kor", label:"국어 선택", type:"single", credits:4, note:"1과목 선택",
+      courses:[{n:"화법과 언어"},{n:"IB 언어와 문학 SLⅢ"}]},
+    { id:"g31_mat", label:"수학 선택", type:"single", credits:3, note:"1과목 선택 (3학점)",
+      courses:[{n:"기하"},{n:"통합수학Ⅰ"},{n:"IB 경제 SL Ⅲ"}]},
+    { id:"g31_eng", label:"영어 선택", type:"single", credits:4, note:"1과목 선택",
+      courses:[{n:"영어 독해와 작문"},{n:"IB 영어 HL Ⅲ"},{n:"IB 영어 SL Ⅲ"}]},
+    { id:"g31_free", label:"자유 선택", type:"multi", credits:4, maxSel:3, note:"3과목 선택 (12학점)",
+      courses:[{n:"물리학"},{n:"생명과학"},{n:"화학"},{n:"논술"},{n:"문학 감상과 비평"},{n:"정보과학"},{n:"경제 수학"},{n:"사회와 문화"},{n:"정치"},{n:"세계시민과 지리"},{n:"영미 문학 읽기"},{n:"미술 매체 탐구"},{n:"시각 디자인"},{n:"음악 이론"},{n:"중국어 회화"},{n:"일본어 회화Ⅰ"},{n:"기초 체육 전공 실기"},{n:"스포츠 개론"},{n:"IB 물리학 HL Ⅲ"},{n:"IB 일반화학 HL Ⅲ"},{n:"IB 일반화학 SL Ⅲ"},{n:"고급 물리학"},{n:"고급 생명과학"},{n:"고급 화학"},{n:"기후변화와 환경생태"},{n:"과학의 역사와 문화"},{n:"에너지와 탄소 중립"},{n:"세포와 물질대사"},{n:"전자기와 양자"},{n:"화학 반응의 세계"},{n:"통계와 사회"},{n:"논리와 사고"},{n:"디지털 논리 회로"},{n:"정보 통신"},{n:"지식 재산 일반"},{n:"IB 역사 HL Ⅲ"},{n:"마케팅과 광고"},{n:"빅 히스토리"},{n:"전문 수학"},{n:"선형대수학"},{n:"IB 수학 분석과 접근 SL Ⅲ"},{n:"IB 수학 분석과 접근 HL Ⅲ"},{n:"세계 문화와 영어"},{n:"미술 창작"},{n:"제품 디자인"},{n:"영화 감상과 비평"},{n:"조형 탐구"},{n:"시창⋅청음"},{n:"중국 언어와 역사의 이해1"},{n:"일본어 회화Ⅱ"},{n:"고급 체육 전공 실기"},{n:"육상"}]},
+    { id:"g31_inc", label:"3학점 순증 선택 (선택 사항)", type:"single", credits:3, optional:true, note:"0~1과목 선택",
+      courses:[{n:"농업 이해"},{n:"생활과학 탐구"},{n:"융합지성사"},{n:"교육의 이해"},{n:"고급 미적분"},{n:"데이터 과학"},{n:"기본 유기화학"},{n:"보건"},{n:"식품과 영양"},{n:"국제 경제"},{n:"로봇과 공학세계"},{n:"VR⋅AR 콘텐츠 제작"},{n:"심화 체조 전공 실기"},{n:"IB 지식이론 Ⅲ"}]},
+  ]
+},
+{
+  id:"3-2", label:"3학년 2학기",
+  groups:[
+    { id:"g32_kor", label:"국어 선택", type:"single", credits:4, note:"1과목 선택",
+      courses:[{n:"언어생활 탐구"},{n:"IB 언어와 문학 SL Ⅳ"}]},
+    { id:"g32_mat", label:"수학/기타 선택", type:"single", credits:3, note:"1과목 선택 (3학점)",
+      courses:[{n:"고급 대수"},{n:"실용 통계"},{n:"IB 경제 SL Ⅳ"},{n:"미술 전공 실기"},{n:"스포츠 경기 기술"}]},
+    { id:"g32_eng", label:"영어 선택", type:"single", credits:4, note:"1과목 선택",
+      courses:[{n:"심화 영어"},{n:"IB 영어 HL Ⅳ"},{n:"IB 영어 SL Ⅳ"}]},
+    { id:"g32_free", label:"자유 선택", type:"multi", credits:4, maxSel:3, note:"3과목 선택 (12학점)",
+      courses:[{n:"고급 물리학"},{n:"고급 생명과학"},{n:"고급 화학"},{n:"물리학 주제 토론"},{n:"화학 주제 토론"},{n:"생명과학 주제 토론"},{n:"과학 교양"},{n:"IB 물리학 HL Ⅳ"},{n:"IB 일반화학 HL Ⅳ"},{n:"IB 일반화학 SL Ⅳ"},{n:"프런티어 사이언스"},{n:"주제 탐구 독서"},{n:"기초 조리"},{n:"발명과 디자인"},{n:"컴퓨터 구조"},{n:"컴퓨터 네트워크"},{n:"IB 역사 HL Ⅳ"},{n:"세계시민교육"},{n:"이산 수학"},{n:"AP미적분학Ⅰ"},{n:"IB 수학 분석과 접근 SL Ⅳ"},{n:"IB 수학 분석과 접근 HL Ⅳ"},{n:"미디어 영어"},{n:"제품 디자인"},{n:"미술 감상과 비평"},{n:"무대 미술과 기술"},{n:"중국 언어와 역사의 이해2"},{n:"일본 문화"},{n:"스포츠 경기 체력"},{n:"체조"}]},
+    { id:"g32_inc", label:"3학점 순증 선택 (선택 사항)", type:"single", credits:3, optional:true, note:"0~1과목 선택",
+      courses:[{n:"농업 이해"},{n:"생활과학 탐구"},{n:"교육의 이해"},{n:"미디어와 사회"},{n:"고급 미적분"},{n:"생태와 환경"},{n:"인공지능 기초"},{n:"도자기 공예"},{n:"심화 육상 단거리 전공 실기"},{n:"IB 지식이론 Ⅳ"}]},
+  ]
+},
+];
+
+// course → [semId, groupId, ...] lookup for recommendations
+const COURSE_LOCATION = {};
+SEMESTERS.forEach(sem => {
+  sem.groups.forEach(grp => {
+    grp.courses.forEach(c => {
+      if(!COURSE_LOCATION[c.n]) COURSE_LOCATION[c.n] = [];
+      COURSE_LOCATION[c.n].push({sem:sem.label, grp:grp.label});
+    });
+  });
+});
+
+// ═══════════════════════════════════════════════════════
+// RECOMMENDED ROADMAPS (2026학년도 편제표 기준)
+// ═══════════════════════════════════════════════════════
+// 학교 안내자료가 특정 과목을 추천하지 않고 "개인별 선택"으로 남겨둔 자리를 나타내는 표식.
+// 로드맵 적용 시 이 값은 실제 과목으로 추가되지 않으며, 학생이 직접 선택해야 이수 조건이 충족된다.
+const INDIVIDUAL_CHOICE = '개인별 선택';
+
+const RECOMMENDED_ROADMAPS = {
+  수학: {
+    '2-1':{ g21_kor:'독서와 작문', g21_mat:'미적분Ⅰ', g21_eng:'영어Ⅰ', g21_exp:'수학과제 탐구', g21_free:['물리학','정보과학',INDIVIDUAL_CHOICE] },
+    '2-2':{ g22_kor:'문학', g22_mat:'확률과 통계', g22_eng:'영어Ⅱ', g22_exp:'융합과학 탐구', g22_free:['미적분Ⅱ','역학과 에너지','자료 구조'] },
+    '3-1':{ g31_kor:'화법과 언어', g31_mat:'기하', g31_eng:'영어 독해와 작문', g31_free:['선형대수학','디지털 논리 회로','전자기와 양자'], g31_inc:'고급 미적분' },
+    '3-2':{ g32_kor:'언어생활 탐구', g32_mat:'고급 대수', g32_eng:'심화 영어', g32_free:['AP미적분학Ⅰ','과학 교양','세계시민교육'], g32_inc:'인공지능 기초' }
+  },
+  물리학: {
+    '2-1':{ g21_kor:'독서와 작문', g21_mat:'미적분Ⅰ', g21_eng:'영어Ⅰ', g21_exp:'물리학 실험', g21_free:['물리학','화학','생명과학'] },
+    '2-2':{ g22_kor:'문학', g22_mat:'확률과 통계', g22_eng:'영어Ⅱ', g22_exp:'융합과학 탐구', g22_free:['역학과 에너지','미적분Ⅱ','물질과 에너지'] },
+    '3-1':{ g31_kor:'화법과 언어', g31_mat:'기하', g31_eng:'영어 독해와 작문', g31_free:['전자기와 양자','고급 물리학',INDIVIDUAL_CHOICE], g31_inc:INDIVIDUAL_CHOICE },
+    '3-2':{ g32_kor:'언어생활 탐구', g32_mat:'고급 대수', g32_eng:'심화 영어', g32_free:['물리학 주제 토론','과학 교양',INDIVIDUAL_CHOICE], g32_inc:INDIVIDUAL_CHOICE }
+  },
+  화학: {
+    '2-1':{ g21_kor:'독서와 작문', g21_mat:'미적분Ⅰ', g21_eng:'영어Ⅰ', g21_exp:'화학 실험', g21_free:['물리학','화학','생명과학'] },
+    '2-2':{ g22_kor:'문학', g22_mat:'확률과 통계', g22_eng:'영어Ⅱ', g22_exp:'융합과학 탐구', g22_free:['물질과 에너지','화학 분석','미적분Ⅱ'] },
+    '3-1':{ g31_kor:'화법과 언어', g31_mat:'기하', g31_eng:'영어 독해와 작문', g31_free:['화학 반응의 세계','고급 화학','전자기와 양자'], g31_inc:'기본 유기화학' },
+    '3-2':{ g32_kor:'언어생활 탐구', g32_mat:'고급 대수', g32_eng:'심화 영어', g32_free:['화학 주제 토론','과학 교양',INDIVIDUAL_CHOICE], g32_inc:INDIVIDUAL_CHOICE }
+  },
+  생명과학: {
+    '2-1':{ g21_kor:'독서와 작문', g21_mat:'미적분Ⅰ', g21_eng:'영어Ⅰ', g21_exp:'생명과학 실험', g21_free:['화학','생명과학','물리학'] },
+    '2-2':{ g22_kor:'문학', g22_mat:'확률과 통계', g22_eng:'영어Ⅱ', g22_exp:'융합과학 탐구', g22_free:['생물의 유전','생명 공학 기술','미적분Ⅱ'] },
+    '3-1':{ g31_kor:'화법과 언어', g31_mat:'기하', g31_eng:'영어 독해와 작문', g31_free:['세포와 물질대사','고급 생명과학','화학 반응의 세계'], g31_inc:'농업 이해' },
+    '3-2':{ g32_kor:'언어생활 탐구', g32_mat:'고급 대수', g32_eng:'심화 영어', g32_free:['생명과학 주제 토론','과학 교양',INDIVIDUAL_CHOICE], g32_inc:INDIVIDUAL_CHOICE }
+  },
+  공학: {
+    '2-1':{ g21_kor:'독서와 작문', g21_mat:'미적분Ⅰ', g21_eng:'영어Ⅰ', g21_exp:'창의 공학 설계', g21_free:['물리학','화학','생명과학'] },
+    '2-2':{ g22_kor:'문학', g22_mat:'확률과 통계', g22_eng:'영어Ⅱ', g22_exp:'융합과학 탐구', g22_free:['역학과 에너지','물질과 에너지','미적분Ⅱ'] },
+    '3-1':{ g31_kor:'화법과 언어', g31_mat:'기하', g31_eng:'영어 독해와 작문', g31_free:['지식 재산 일반','전자기와 양자','정보과학'], g31_inc:'고급 미적분' },
+    '3-2':{ g32_kor:'언어생활 탐구', g32_mat:'고급 대수', g32_eng:'심화 영어', g32_free:['물리학 주제 토론','과학 교양','발명과 디자인'], g32_inc:INDIVIDUAL_CHOICE }
+  },
+  IT: {
+    '2-1':{ g21_kor:'독서와 작문', g21_mat:'미적분Ⅰ', g21_eng:'영어Ⅰ', g21_exp:'정보 과제 연구', g21_free:['물리학','정보과학','화학'] },
+    '2-2':{ g22_kor:'문학', g22_mat:'확률과 통계', g22_eng:'영어Ⅱ', g22_exp:'융합과학 탐구', g22_free:['역학과 에너지','자료 구조','미적분Ⅱ'] },
+    '3-1':{ g31_kor:'화법과 언어', g31_mat:'기하', g31_eng:'영어 독해와 작문', g31_free:['디지털 논리 회로','정보 통신','전자기와 양자'], g31_inc:'데이터 과학' },
+    '3-2':{ g32_kor:'언어생활 탐구', g32_mat:'고급 대수', g32_eng:'심화 영어', g32_free:['컴퓨터 네트워크','과학 교양','컴퓨터 구조'], g32_inc:'인공지능 기초' }
+  },
+  인문학: {
+    '2-1':{ g21_kor:'독서와 작문', g21_mat:'미적분Ⅰ', g21_eng:'영어Ⅰ', g21_exp:'경제', g21_free:['문학과 영상','세계사','현대사회와 윤리'] },
+    '2-2':{ g22_kor:'문학', g22_mat:'확률과 통계', g22_eng:'영어Ⅱ', g22_exp:'사회문제 탐구', g22_free:['소설 창작','독서 토론과 글쓰기','사회 문제와 윤리'] },
+    '3-1':{ g31_kor:'화법과 언어', g31_mat:'기하', g31_eng:'영어 독해와 작문', g31_free:['빅 히스토리','논리와 사고','논술'], g31_inc:'융합지성사' },
+    '3-2':{ g32_kor:'언어생활 탐구', g32_mat:'실용 통계', g32_eng:'심화 영어', g32_free:['세계시민교육','주제 탐구 독서','과학 교양'], g32_inc:'미디어와 사회' }
+  },
+  국제어문: {
+    '2-1':{ g21_kor:'독서와 작문', g21_mat:'미적분Ⅰ', g21_eng:'영어Ⅰ', g21_exp:'경제', g21_free:['영미 문학 읽기','중국어 회화','세계사'] },
+    '2-2':{ g22_kor:'문학', g22_mat:'확률과 통계', g22_eng:'영어Ⅱ', g22_exp:'사회문제 탐구', g22_free:['영어 발표와 토론','심화 중국어','영화 제작 실습'] },
+    '3-1':{ g31_kor:'화법과 언어', g31_mat:'기하', g31_eng:'영어 독해와 작문', g31_free:['세계 문화와 영어','중국 언어와 역사의 이해1','논리와 사고'], g31_inc:'교육의 이해' },
+    '3-2':{ g32_kor:'언어생활 탐구', g32_mat:'실용 통계', g32_eng:'심화 영어', g32_free:['세계시민교육','중국 언어와 역사의 이해2','과학 교양'], g32_inc:'미디어와 사회' }
+  },
+  사회과학: {
+    '2-1':{ g21_kor:'독서와 작문', g21_mat:'미적분Ⅰ', g21_eng:'영어Ⅰ', g21_exp:'경제', g21_free:['사회와 문화','정치','현대사회와 윤리'] },
+    '2-2':{ g22_kor:'문학', g22_mat:'확률과 통계', g22_eng:'영어Ⅱ', g22_exp:'사회문제 탐구', g22_free:['미래 사회학','국제 정치','사회 문제와 윤리'] },
+    '3-1':{ g31_kor:'화법과 언어', g31_mat:'기하', g31_eng:'영어 독해와 작문', g31_free:['통계와 사회','논리와 사고','세계시민과 지리'], g31_inc:'국제 경제' },
+    '3-2':{ g32_kor:'언어생활 탐구', g32_mat:'실용 통계', g32_eng:'심화 영어', g32_free:['세계시민교육','주제 탐구 독서','과학 교양'], g32_inc:'미디어와 사회' }
+  },
+  경제경영: {
+    '2-1':{ g21_kor:'독서와 작문', g21_mat:'미적분Ⅰ', g21_eng:'영어Ⅰ', g21_exp:'경제', g21_free:['기업과 경영','사회와 문화','세계시민과 지리'] },
+    '2-2':{ g22_kor:'문학', g22_mat:'확률과 통계', g22_eng:'영어Ⅱ', g22_exp:'사회문제 탐구', g22_free:['현대 경제 탐구','국제 정치','금융과 경제생활'] },
+    '3-1':{ g31_kor:'화법과 언어', g31_mat:'기하', g31_eng:'영어 독해와 작문', g31_free:['마케팅과 광고','경제 수학','논리와 사고'], g31_inc:'국제 경제' },
+    '3-2':{ g32_kor:'언어생활 탐구', g32_mat:'실용 통계', g32_eng:'심화 영어', g32_free:['세계시민교육','주제 탐구 독서','과학 교양'], g32_inc:'미디어와 사회' }
+  },
+  예술: {
+    '2-1':{ g21_kor:'독서와 작문', g21_mat:'미적분Ⅰ', g21_eng:'영어Ⅰ', g21_exp:'미디어 콘텐츠 일반', g21_free:['미술 매체 탐구','시각 디자인','사회와 문화'] },
+    '2-2':{ g22_kor:'문학', g22_mat:'확률과 통계', g22_eng:'영어Ⅱ', g22_exp:'음악과 미디어', g22_free:['드로잉','색채 디자인','영화 제작 실습'] },
+    '3-1':{ g31_kor:'화법과 언어', g31_mat:['기하','통합수학Ⅰ'], g31_eng:'영어 독해와 작문', g31_free:['미술 창작','조형 탐구','제품 디자인'], g31_inc:'VR⋅AR 콘텐츠 제작' },
+    '3-2':{ g32_kor:'언어생활 탐구', g32_mat:'미술 전공 실기', g32_eng:'심화 영어', g32_free:['미술 감상과 비평','과학 교양','세계시민교육'], g32_inc:'도자기 공예' }
+  },
+  체육: {
+    '2-1':{ g21_kor:'독서와 작문', g21_mat:'미적분Ⅰ', g21_eng:'영어Ⅰ', g21_exp:'스포츠 행정 및 경영', g21_free:['기초 체육 전공 실기','스포츠 개론','운동과 건강'] },
+    '2-2':{ g22_kor:'문학', g22_mat:'확률과 통계', g22_eng:'영어Ⅱ', g22_exp:'스포츠 생리의학', g22_free:['심화 체육 전공 실기','스포츠 경기 분석','스포츠 교육'] },
+    '3-1':{ g31_kor:'화법과 언어', g31_mat:'기하', g31_eng:'영어 독해와 작문', g31_free:['고급 체육 전공 실기','육상','사회와 문화'], g31_inc:'심화 체조 전공 실기' },
+    '3-2':{ g32_kor:'언어생활 탐구', g32_mat:'스포츠 경기 기술', g32_eng:'심화 영어', g32_free:['스포츠 경기 체력','체조','과학 교양'], g32_inc:'심화 육상 단거리 전공 실기' }
+  },
+  국제자연과학: {
+    '2-1':{ g21_kor:'IB 언어와 문학 SL Ⅰ', g21_mat:'IB 수학 분석과 접근 HL Ⅰ', g21_eng:'IB 영어 SL Ⅰ', g21_exp:'IB 지식이론 Ⅰ', g21_free:['IB 경제 SL Ⅰ','IB 물리학 HL Ⅰ','IB 일반화학 HL Ⅰ'] },
+    '2-2':{ g22_kor:'IB 언어와 문학 SL Ⅱ', g22_mat:'IB 수학 분석과 접근 HL Ⅱ', g22_eng:'IB 영어 SL Ⅱ', g22_exp:'IB 지식이론 Ⅱ', g22_free:['IB 경제 SL Ⅱ','IB 물리학 HL Ⅱ','IB 일반화학 HL Ⅱ'] },
+    '3-1':{ g31_kor:'IB 언어와 문학 SLⅢ', g31_mat:'IB 경제 SL Ⅲ', g31_eng:'IB 영어 SL Ⅲ', g31_free:['IB 수학 분석과 접근 HL Ⅲ','IB 물리학 HL Ⅲ','IB 일반화학 HL Ⅲ'], g31_inc:'IB 지식이론 Ⅲ' },
+    '3-2':{ g32_kor:'IB 언어와 문학 SL Ⅳ', g32_mat:'IB 경제 SL Ⅳ', g32_eng:'IB 영어 SL Ⅳ', g32_free:['IB 수학 분석과 접근 HL Ⅳ','IB 물리학 HL Ⅳ','IB 일반화학 HL Ⅳ'], g32_inc:'IB 지식이론 Ⅳ' }
+  },
+  국제인문사회: {
+    '2-1':{ g21_kor:'IB 언어와 문학 SL Ⅰ', g21_mat:'IB 수학 분석과 접근 SL Ⅰ', g21_eng:'IB 영어 HL Ⅰ', g21_exp:'IB 지식이론 Ⅰ', g21_free:['IB 경제 SL Ⅰ','IB 역사 HL Ⅰ','IB 일반화학 SL Ⅰ'] },
+    '2-2':{ g22_kor:'IB 언어와 문학 SL Ⅱ', g22_mat:'IB 수학 분석과 접근 SL Ⅱ', g22_eng:'IB 영어 HL Ⅱ', g22_exp:'IB 지식이론 Ⅱ', g22_free:['IB 경제 SL Ⅱ','IB 역사 HL Ⅱ','IB 일반화학 SL Ⅱ'] },
+    '3-1':{ g31_kor:'IB 언어와 문학 SLⅢ', g31_mat:'IB 경제 SL Ⅲ', g31_eng:'IB 영어 HL Ⅲ', g31_free:['IB 수학 분석과 접근 SL Ⅲ','IB 역사 HL Ⅲ','IB 일반화학 SL Ⅲ'], g31_inc:'IB 지식이론 Ⅲ' },
+    '3-2':{ g32_kor:'IB 언어와 문학 SL Ⅳ', g32_mat:'IB 경제 SL Ⅳ', g32_eng:'IB 영어 HL Ⅳ', g32_free:['IB 수학 분석과 접근 SL Ⅳ','IB 역사 HL Ⅳ','IB 일반화학 SL Ⅳ'], g32_inc:'IB 지식이론 Ⅳ' }
+  }
+};
+
+
+// ═══════════════════════════════════════════════════════
+// PREREQS — 선수과목 규정
+// ═══════════════════════════════════════════════════════
+const PREREQS = {
+  '고급 미적분':      { courses:['미적분Ⅱ'], type:'all' },
+  'AP미적분학Ⅰ':     { courses:['미적분Ⅱ'], type:'all' },
+  '고급 대수':        { courses:['미적분Ⅰ'], type:'all' },
+  '선형대수학':       { courses:['미적분Ⅰ'], type:'all' },
+  '전문 수학':        { courses:['미적분Ⅰ'], type:'all' },
+  '통합수학Ⅰ':       { courses:['미적분Ⅰ','확률과 통계'], type:'all' },
+  '실용 통계':        { courses:['확률과 통계'], type:'all' },
+  '심화 중국어':      { courses:['중국어 회화'], type:'all' },
+  '일본어 회화Ⅱ':    { courses:['일본어 회화Ⅰ'], type:'all' },
+  '역학과 에너지':    { courses:['물리학'], type:'all' },
+  '전자기와 양자':    { courses:['물리학'], type:'all' },
+  '고급 물리학':      { courses:['역학과 에너지','전자기와 양자'], type:'all' },
+  '물질과 에너지':    { courses:['화학'], type:'all' },
+  '화학 반응의 세계': { courses:['화학'], type:'all' },
+  '고급 화학':        { courses:['물질과 에너지','화학 반응의 세계'], type:'all' },
+  '화학 분석':        { courses:['화학'], type:'all' },
+  '기본 유기화학':    { courses:['화학'], type:'all' },
+  '생물의 유전':      { courses:['생명과학'], type:'all' },
+  '세포와 물질대사':  { courses:['생명과학'], type:'all' },
+  '고급 생명과학':    { courses:['생물의 유전','세포와 물질대사'], type:'all' },
+  '생명 공학 기술':   { courses:['생명과학'], type:'all' },
+  '자료 구조':        { courses:['정보과학'], type:'all' },
+  'IB 지식이론 Ⅱ':                { courses:['IB 지식이론 Ⅰ'], type:'all' },
+  'IB 지식이론 Ⅲ':                { courses:['IB 지식이론 Ⅱ'], type:'all' },
+  'IB 지식이론 Ⅳ':                { courses:['IB 지식이론 Ⅲ'], type:'all' },
+  'IB 언어와 문학 SL Ⅱ':          { courses:['IB 언어와 문학 SL Ⅰ'], type:'all' },
+  'IB 언어와 문학 SLⅢ':           { courses:['IB 언어와 문학 SL Ⅱ'], type:'all' },
+  'IB 언어와 문학 SL Ⅳ':          { courses:['IB 언어와 문학 SLⅢ'], type:'all' },
+  'IB 수학 분석과 접근 SL Ⅱ':     { courses:['IB 수학 분석과 접근 SL Ⅰ'], type:'all' },
+  'IB 수학 분석과 접근 SL Ⅲ':     { courses:['IB 수학 분석과 접근 SL Ⅱ'], type:'all' },
+  'IB 수학 분석과 접근 SL Ⅳ':     { courses:['IB 수학 분석과 접근 SL Ⅲ'], type:'all' },
+  'IB 수학 분석과 접근 HL Ⅱ':     { courses:['IB 수학 분석과 접근 HL Ⅰ'], type:'all' },
+  'IB 수학 분석과 접근 HL Ⅲ':     { courses:['IB 수학 분석과 접근 HL Ⅱ'], type:'all' },
+  'IB 수학 분석과 접근 HL Ⅳ':     { courses:['IB 수학 분석과 접근 HL Ⅲ'], type:'all' },
+  'IB 영어 HL Ⅱ':                 { courses:['IB 영어 HL Ⅰ'], type:'all' },
+  'IB 영어 HL Ⅲ':                 { courses:['IB 영어 HL Ⅱ'], type:'all' },
+  'IB 영어 HL Ⅳ':                 { courses:['IB 영어 HL Ⅲ'], type:'all' },
+  'IB 영어 SL Ⅱ':                 { courses:['IB 영어 SL Ⅰ'], type:'all' },
+  'IB 영어 SL Ⅲ':                 { courses:['IB 영어 SL Ⅱ'], type:'all' },
+  'IB 영어 SL Ⅳ':                 { courses:['IB 영어 SL Ⅲ'], type:'all' },
+  'IB 물리학 HL Ⅱ':               { courses:['IB 물리학 HL Ⅰ'], type:'all' },
+  'IB 물리학 HL Ⅲ':               { courses:['IB 물리학 HL Ⅱ'], type:'all' },
+  'IB 물리학 HL Ⅳ':               { courses:['IB 물리학 HL Ⅲ'], type:'all' },
+  'IB 일반화학 HL Ⅱ':             { courses:['IB 일반화학 HL Ⅰ'], type:'all' },
+  'IB 일반화학 HL Ⅲ':             { courses:['IB 일반화학 HL Ⅱ'], type:'all' },
+  'IB 일반화학 HL Ⅳ':             { courses:['IB 일반화학 HL Ⅲ'], type:'all' },
+  'IB 일반화학 SL Ⅱ':             { courses:['IB 일반화학 SL Ⅰ'], type:'all' },
+  'IB 일반화학 SL Ⅲ':             { courses:['IB 일반화학 SL Ⅱ'], type:'all' },
+  'IB 일반화학 SL Ⅳ':             { courses:['IB 일반화학 SL Ⅲ'], type:'all' },
+  'IB 경제 SL Ⅱ':                 { courses:['IB 경제 SL Ⅰ'], type:'all' },
+  'IB 경제 SL Ⅲ':                 { courses:['IB 경제 SL Ⅱ'], type:'all' },
+  'IB 경제 SL Ⅳ':                 { courses:['IB 경제 SL Ⅲ'], type:'all' },
+  'IB 역사 HL Ⅱ':                 { courses:['IB 역사 HL Ⅰ'], type:'all' },
+  'IB 역사 HL Ⅲ':                 { courses:['IB 역사 HL Ⅱ'], type:'all' },
+  'IB 역사 HL Ⅳ':                 { courses:['IB 역사 HL Ⅲ'], type:'all' },
+};
+
+
+// ═══════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════
+// selections[groupId] = Set of course names
+const selections = {};
+SEMESTERS.forEach(sem => sem.groups.forEach(grp => { selections[grp.id] = new Set(); }));
+
+let currentSem = '2-1';
+
+// ═══════════════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════════════
+function init() {
+  renderSemNav();
+  renderSemester(currentSem);
+  updateDiploma();
+  refreshPrereqVisuals();
+}
+
+function renderSemNav() {
+  const nav = document.getElementById('semNav');
+  nav.innerHTML = SEMESTERS.map(s => `
+    <div class="sem-tab ${s.id===currentSem?'active':''}" onclick="switchSem('${s.id}')">
+      ${s.label}<small id="semBadge_${s.id}"></small>
+    </div>`).join('');
+}
+
+function switchSem(id) {
+  currentSem = id;
+  renderSemNav();
+  renderSemester(id);
+}
+
+function renderSemester(semId) {
+  const sem = SEMESTERS.find(s=>s.id===semId);
+  const cont = document.getElementById('semContent');
+  cont.innerHTML = sem.groups.map(grp => renderGroup(grp, semId)).join('');
+  updateGroupWarnings();
+  refreshPrereqVisuals();
+}
+
+function renderGroup(grp, semId) {
+  const selSet = selections[grp.id];
+  const typeLabel = grp.type==='single' ? '택 1' : `택 ${grp.maxSel}`;
+
+  let courseList = grp.courses.slice();
+
+  const coursesHtml = courseList.map((c, idx) => {
+    const isNone = c.n === '(선택 안 함)';
+    const checked = isNone
+      ? (selSet.size===0 ? 'checked' : '')
+      : (selSet.has(c.n) ? 'checked' : '');
+    const inputType = grp.type==='single' ? 'radio' : 'checkbox';
+    const tagClass = isNone ? '' : getCourseTag(c.n);
+    const safeId = `inp_${grp.id}_${idx}`;
+    const style = isNone ? 'style="color:#aaa;border-style:dashed"' : '';
+    return `<div class="ci ${tagClass}">
+      <input type="${inputType}" id="${safeId}" name="${grp.id}" value="${c.n}" ${checked}
+        onchange="handleSelect('${grp.id}','${c.n}','${grp.type}',${grp.maxSel||1},${isNone})">
+      <label for="${safeId}" ${style}>${c.n}</label>
+    </div>`;
+  }).join('');
+
+  const optNote = grp.optional ? ' <span style="color:#999;font-size:10px">(추가 이수 선택)</span>' : '';
+
+  return `<div class="group-card" id="card_${grp.id}">
+    <div class="group-head">
+      <h3>${grp.label}${optNote}</h3>
+      <div class="group-badges">
+        <span class="badge badge-cred">${grp.credits}학점</span>
+        <span class="badge badge-sel">${typeLabel}</span>
+        <span class="badge badge-cnt" id="cnt_${grp.id}">${selSet.size}/${grp.maxSel||1} 선택됨</span>
+      </div>
+    </div>
+    <div class="course-grid">${coursesHtml}</div>
+    <div class="group-warn" id="warn_${grp.id}"></div>
+  </div>`;
+}
+
+function handleSelect(groupId, courseName, type, maxSel, isNone=false) {
+  const selSet = selections[groupId];
+
+  if(type==='single') {
+    const oldCourse = selSet.size > 0 ? [...selSet][0] : null;
+
+    if(!isNone) {
+      // 중복 선택 검사
+      if(isSelectedElsewhere(courseName, groupId)) {
+        if(oldCourse) findInputByValue(groupId, oldCourse, el => el.checked = true);
+        else findInputByValue(groupId, '(선택 안 함)', el => el.checked = true);
+        showWarn(groupId, `'${courseName}'은(는) 다른 학기에서 이미 선택된 과목입니다.`);
+        return;
+      }
+      // 학점 규정 검사
+      const err = wouldExceedLimit(groupId, courseName, oldCourse);
+      if(err) {
+        if(oldCourse) findInputByValue(groupId, oldCourse, el => el.checked = true);
+        else findInputByValue(groupId, '(선택 안 함)', el => el.checked = true);
+        showWarn(groupId, err);
+        return;
+      }
+      // 선수과목 검사 (old 제거 후 new의 선수 충족 여부)
+      selSet.clear();
+      const prereqErr = getPrereqMessage(courseName);
+      if(prereqErr && !isPrereqSatisfied(courseName)) {
+        if(oldCourse) { selSet.add(oldCourse); findInputByValue(groupId, oldCourse, el => el.checked = true); }
+        else findInputByValue(groupId, '(선택 안 함)', el => el.checked = true);
+        showWarn(groupId, prereqErr);
+        return;
+      }
+      selSet.add(courseName);
+      // 구 과목 제거로 인한 연쇄 선수과목 취소
+      const removed = enforceAllPrereqs();
+      if(removed.length) {
+        syncDomToSelections();
+        showWarn(groupId, `선수과목 해제로 자동 취소됨: ${removed.join(', ')}`);
+      }
+    } else {
+      selSet.clear();
+      const removed = enforceAllPrereqs();
+      if(removed.length) {
+        syncDomToSelections();
+        showWarn(groupId, `선수과목 해제로 자동 취소됨: ${removed.join(', ')}`);
+      }
+    }
+  } else {
+    if(selSet.has(courseName)) {
+      selSet.delete(courseName);
+      findInputByValue(groupId, courseName, el => el.checked = false);
+      // 연쇄 선수과목 취소
+      const removed = enforceAllPrereqs();
+      if(removed.length) {
+        syncDomToSelections();
+        showWarn(groupId, `선수과목 해제로 자동 취소됨: ${removed.join(', ')}`);
+      }
+    } else {
+      // 중복 선택 검사
+      if(isSelectedElsewhere(courseName, groupId)) {
+        findInputByValue(groupId, courseName, el => el.checked = false);
+        showWarn(groupId, `'${courseName}'은(는) 다른 학기에서 이미 선택된 과목입니다.`);
+        return;
+      }
+      if(selSet.size >= maxSel) {
+        findInputByValue(groupId, courseName, el => el.checked = false);
+        showWarn(groupId, `최대 ${maxSel}과목까지 선택 가능합니다.`);
+        return;
+      }
+      // 학점 규정 검사
+      const err = wouldExceedLimit(groupId, courseName, null);
+      if(err) {
+        findInputByValue(groupId, courseName, el => el.checked = false);
+        showWarn(groupId, err);
+        return;
+      }
+      // 선수과목 검사
+      const prereqErr = getPrereqMessage(courseName);
+      if(prereqErr && !isPrereqSatisfied(courseName)) {
+        findInputByValue(groupId, courseName, el => el.checked = false);
+        showWarn(groupId, prereqErr);
+        return;
+      }
+      selSet.add(courseName);
+    }
+  }
+
+  updateGroupCounter(groupId);
+  updateGroupWarnings();
+  updateDiploma();
+  refreshPrereqVisuals();
+}
+
+// selections 상태를 DOM 체크박스/라디오에 동기화 (연쇄 취소 후 사용)
+function syncDomToSelections() {
+  SEMESTERS.forEach(sem => sem.groups.forEach(grp => {
+    document.querySelectorAll(`input[name="${grp.id}"]`).forEach(inp => {
+      if(inp.value === '(선택 안 함)') {
+        inp.checked = selections[grp.id].size === 0;
+      } else {
+        inp.checked = selections[grp.id].has(inp.value);
+      }
+    });
+    updateGroupCounter(grp.id);
+  }));
+}
+
+function findInputByValue(groupId, value, fn) {
+  document.querySelectorAll(`input[name="${groupId}"]`).forEach(inp => {
+    if(inp.value === value) fn(inp);
+  });
+}
+
+function showWarn(groupId, msg) {
+  const el = document.getElementById(`warn_${groupId}`);
+  if(!el) return;
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'), 2500);
+}
+
+function updateGroupCounter(groupId) {
+  const el = document.getElementById(`cnt_${groupId}`);
+  if(!el) return;
+  const grp = findGroup(groupId);
+  const cnt = selections[groupId].size;
+  const max = grp.maxSel || 1;
+  el.textContent = `${cnt}/${max} 선택됨`;
+  el.style.background = cnt===max ? '#e8f5e9' : cnt>0 ? '#fff3e0' : '';
+  el.style.color = cnt===max ? '#2e7d32' : cnt>0 ? '#e65100' : '';
+}
+
+function updateGroupWarnings() {
+  SEMESTERS.forEach(sem => {
+    sem.groups.forEach(grp => {
+      const el = document.getElementById(`warn_${grp.id}`);
+      if(!el) return;
+      const cnt = selections[grp.id].size;
+      const max = grp.maxSel||1;
+      if(!grp.optional && cnt < max && cnt > 0) {
+        el.textContent = `${max - cnt}과목 더 선택해야 합니다.`;
+        el.classList.add('show');
+      } else if(!grp.optional && cnt === 0) {
+        el.classList.remove('show');
+      } else {
+        el.classList.remove('show');
+      }
+    });
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+// DIPLOMA CHECK
+// ═══════════════════════════════════════════════════════
+function getAllSelected() {
+  const all = new Set();
+  Object.values(selections).forEach(s => s.forEach(c => all.add(c)));
+  return all;
+}
+
+function updateDiploma() {
+  const all = getAllSelected();
+  const rules = getCurrentRules();
+
+  // ── Required courses
+  const reqStatus = rules.required.map(c => ({ name:c, ok: all.has(c) }));
+  const reqOk = reqStatus.every(r=>r.ok);
+
+  // ── Elective courses (multiple groups)
+  const elecGroups = rules.elective.map(g => ({ ...g, done: g.pool.filter(c => all.has(c)) }));
+  const elecOk = elecGroups.length === 0 || elecGroups.every(g => g.done.length >= g.need);
+
+  // ── Extracurricular
+  const extIds = ['ext1','ext2','ext3','ext4','ext5'];
+  const extChecked = extIds.filter(id => document.getElementById(id)?.checked);
+  const extOk = extChecked.length === extIds.length;
+
+  // ── Honor
+  const honorOk = rules.honor.courses.filter(c => all.has(c)).length >= rules.honor.need;
+
+  // ── Bilingual (모든 과정 공통)
+  const bilOk = BILINGUAL_COURSES.every(c => all.has(c));
+
+  // ── 국·영·수 이수학점 상한 (81학점)
+  const sc = calcSubjectCredits();
+  const kemOver = sc.total > KEM_LIMIT;
+
+  // ── Overall
+  const diplomaOk = reqOk && elecOk && extOk && !kemOver && isAllComplete();
+
+  // Update program label + legend
+  const titleEl = document.getElementById('summaryTitle');
+  if(titleEl) titleEl.textContent = rules.label;
+  const elecLegend = document.getElementById('elecLegend');
+  if(elecLegend) {
+    if(rules.elective.length === 0) {
+      elecLegend.textContent = '선택 과목 없음';
+    } else {
+      const desc = rules.elective.map(g => `${g.pool.length}개 중 ${g.need}개`).join(' + ');
+      elecLegend.textContent = `선택 과목(${desc})`;
+    }
+  }
+
+  // Update summary
+  const box = document.getElementById('summaryBox');
+  const statusEl = document.getElementById('summaryStatus');
+  const detailEl = document.getElementById('summaryDetail');
+
+  const incompleteSems = getIncompleteSemesters();
+  const allComplete = incompleteSems.length === 0;
+
+  if(diplomaOk) {
+    box.className='summary-box ok';
+    statusEl.textContent='이수 가능 ✓';
+    detailEl.textContent='CNSA 디플로마 모든 조건 충족';
+  } else if(reqOk && elecOk && !kemOver && allComplete && !extOk) {
+    box.className='summary-box warn';
+    statusEl.textContent='조건 미충족';
+    detailEl.textContent=`비교과 조건 ${extIds.length-extChecked.length}개 미충족`;
+  } else {
+    box.className='summary-box fail';
+    statusEl.textContent='이수 불가';
+    const missing = reqStatus.filter(r=>!r.ok).length;
+    const msgs=[];
+    if(missing>0) msgs.push(`필수과목 ${missing}개 미선택`);
+    if(!elecOk) {
+      const failCnt = elecGroups.filter(g=>g.done.length<g.need).length;
+      msgs.push(`선택과목 ${failCnt}그룹 미충족`);
+    }
+    if(kemOver) msgs.push(`국·영·수 이수학점 초과 (${sc.total}/${KEM_LIMIT}학점)`);
+    if(!allComplete) msgs.push(`${incompleteSems.join(', ')} 선택 미완료 (개인별 선택 자리를 직접 채워주세요)`);
+    if(!extOk) msgs.push(`비교과 ${extIds.length-extChecked.length}개 미충족`);
+    detailEl.textContent=msgs.join(' · ');
+  }
+
+  // Required list
+  const reqList = document.getElementById('reqList');
+  reqList.innerHTML = reqStatus.map(r => `
+    <li class="cond-item" style="cursor:pointer" onclick="selectCourseFromPanel('${r.name}')" title="${r.name} — 클릭하여 학기에서 선택">
+      <span class="cond-icon ${r.ok?'tag-ok':'tag-fail'}">${r.ok?'✅':'☐'}</span>
+      <div class="cond-text">
+        ${r.name}
+        <div class="cond-sub">${getCourseLocation(r.name)}</div>
+      </div>
+    </li>`).join('');
+
+  // Elective progress (다중 그룹 지원)
+  document.getElementById('elecCountBadge').textContent = elecOk ? '✅' : (elecGroups.length > 0 ? '미충족' : '');
+  const elecContent = document.getElementById('elecContent');
+  if(elecGroups.length === 0) {
+    elecContent.innerHTML = '<div style="font-size:11px;color:#aaa;padding:4px 0">이 과정은 선택 과목 조건이 없습니다.</div>';
+  } else {
+    elecContent.innerHTML = elecGroups.map((g, i) => {
+      const pct = Math.min(100, g.done.length / g.need * 100);
+      const barCls = g.done.length >= g.need ? 'pf-ok' : g.done.length > 0 ? 'pf-warn' : 'pf-fail';
+      const lbl = elecGroups.length > 1 ? g.label : '이수 진행';
+      return `<div style="margin-bottom:${i<elecGroups.length-1?'10':'0'}px">
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:#666;margin-bottom:3px">
+          <span>${lbl}</span>
+          <span style="font-weight:600;color:${g.done.length>=g.need?'#2e7d32':'#e65100'}">${g.done.length} / ${g.need} 과목</span>
+        </div>
+        <div class="prog-bar" style="margin-bottom:5px"><div class="prog-fill ${barCls}" style="width:${pct}%"></div></div>
+        <div class="elec-grid">${g.pool.map(c => {
+          const done = all.has(c);
+          return `<span class="etag ${done?'done':'pending'}" style="cursor:pointer" onclick="selectCourseFromPanel('${c}')" title="${c} — 클릭하여 학기에서 선택">${done?'✓ ':''} ${c}</span>`;
+        }).join('')}</div>
+      </div>`;
+    }).join('');
+  }
+
+  // Honor
+  const honorDoneCnt = rules.honor.courses.filter(c => all.has(c)).length;
+  document.getElementById('honorList').innerHTML =
+    rules.honor.courses.map(c => {
+      const ok = all.has(c);
+      return `<li class="cond-item" style="cursor:pointer" onclick="selectCourseFromPanel('${c}')" title="${c} — 클릭하여 학기에서 선택">
+        <span class="cond-icon ${ok?'tag-ok':'tag-fail'}">${ok?'✅':'☐'}</span>
+        <div class="cond-text">${c}
+          <div class="cond-sub">${getCourseLocation(c)}</div>
+        </div>
+      </li>`;
+    }).join('') +
+    `<li class="cond-item" style="background:#f9f9f9;border-radius:4px;padding:4px 6px;margin-top:4px;pointer-events:none">
+      <span class="cond-icon ${honorOk?'tag-ok':'tag-fail'}">${honorOk?'🏅':'☐'}</span>
+      <div class="cond-text" style="font-size:11px">${honorDoneCnt} / ${rules.honor.need}과목 이수 · 성취율 80% 이상 달성 시 발급</div>
+    </li>`;
+
+  // Bilingual (이중언어 디플로마 — 모든 과정 공통)
+  document.getElementById('bilingualList').innerHTML = BILINGUAL_COURSES.map(c => {
+    const ok = all.has(c);
+    return `<li class="cond-item" style="cursor:pointer" onclick="selectCourseFromPanel('${c}')" title="${c} — 클릭하여 학기에서 선택">
+      <span class="cond-icon ${ok?'tag-ok':'tag-fail'}">${ok?'✅':'☐'}</span>
+      <div class="cond-text">${c}
+        <div class="cond-sub">${getCourseLocation(c)}</div>
+      </div>
+    </li>`;
+  }).join('') + `<li class="cond-item" style="background:#f9f9f9;border-radius:4px;padding:4px 6px;margin-top:4px;pointer-events:none">
+    <span class="cond-icon ${bilOk?'tag-ok':'tag-fail'}">${bilOk?'🌐':'◻'}</span>
+    <div class="cond-text" style="font-size:11px">${bilOk?'이중언어 디플로마 과목 이수 완료':'두 과목 모두 성취율 80% 이상 달성 시 발급'}</div>
+  </li>`;
+
+  // Missing + recommendations
+  const missing = [];
+
+  // missing: 미충족 조건만 수집
+  reqStatus.filter(r=>!r.ok).forEach(r => {
+    missing.push(`${r.name} (필수)`);
+  });
+  if(!elecOk) {
+    elecGroups.filter(g => g.done.length < g.need).forEach(g => {
+      const need = g.need - g.done.length;
+      const lbl = elecGroups.length > 1 ? `${g.label}: ` : '';
+      missing.push(`${lbl}선택과목 ${need}과목 추가 필요`);
+    });
+  }
+
+  // recs: 미이수 필수과목 + 선택 pool에서 아직 선택 안 한 모든 과목 (충족 여부 무관)
+  const recs = {};
+  reqStatus.filter(r=>!r.ok).forEach(r => {
+    const loc = COURSE_LOCATION[r.name];
+    if(loc) recs[r.name] = loc.map(l=>`${l.sem} · ${l.grp}`).join(' / ');
+  });
+  elecGroups.forEach(g => {
+    g.pool.filter(c => !all.has(c)).forEach(c => {
+      const loc = COURSE_LOCATION[c];
+      if(loc) recs[c] = loc.map(l=>l.sem).join(' 또는 ');
+    });
+  });
+
+  const missingSec = document.getElementById('missingSection');
+  const recSec = document.getElementById('recSection');
+
+  // 부족한 조건: 미충족일 때만 표시
+  if(missing.length > 0 && !diplomaOk) {
+    missingSec.style.display='block';
+    document.getElementById('missingContent').innerHTML =
+      '<div class="missing-wrap">' +
+      missing.map(m=>`<span class="mtag">${m}</span>`).join('') +
+      '</div>';
+  } else {
+    missingSec.style.display='none';
+  }
+
+  // 추천 보완 과목: 미선택 선택과목이 있으면 항상 표시
+  if(Object.keys(recs).length > 0) {
+    recSec.style.display='block';
+    const recHtml = Object.entries(recs).map(([c,loc]) =>
+      `<span class="rtag" style="cursor:pointer;display:inline-flex;flex-direction:column;gap:2px" onclick="selectCourseFromPanel('${c}')" title="${c} — 클릭하여 학기에서 선택">
+        <span>${c}</span>
+        <span style="font-size:9px;color:#90caf9;font-weight:400">${loc}</span>
+      </span>`
+    ).join('');
+    document.getElementById('recContent').innerHTML =
+      `<div class="rec-wrap"><div style="font-size:10px;color:#999;margin-bottom:4px">클릭하면 해당 학기로 이동하여 선택됩니다</div>${recHtml}</div>`;
+  } else {
+    recSec.style.display='none';
+  }
+
+  // Semester badge updates
+  SEMESTERS.forEach(sem => {
+    const badge = document.getElementById(`semBadge_${sem.id}`);
+    if(!badge) return;
+    let cnt = 0;
+    sem.groups.forEach(grp => cnt += selections[grp.id].size);
+    badge.textContent = cnt > 0 ? `${cnt}과목` : '';
+  });
+
+  // 국·영·수 학점 패널 업데이트
+  const totalCred = calcTotalCredits();
+  const kemPct = Math.min(100, sc.total / KEM_LIMIT * 100);
+  const badge = document.getElementById('creditOverBadge');
+  if(badge) badge.textContent = kemOver ? '⚠ 초과!' : '';
+  const creditEl = document.getElementById('creditContent');
+  if(creditEl) {
+    const barCls = kemOver ? 'pf-fail' : sc.total > 72 ? 'pf-warn' : 'pf-ok';
+    const totalColor = kemOver ? '#c62828' : sc.total > 72 ? '#e65100' : '#333';
+    creditEl.innerHTML = `
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:#666;margin-bottom:3px">
+        <span>국·영·수 합계</span>
+        <span style="font-weight:700;color:${totalColor}">${sc.total} / ${KEM_LIMIT}학점</span>
+      </div>
+      <div class="prog-bar" style="margin-bottom:8px"><div class="prog-fill ${barCls}" style="width:${kemPct}%"></div></div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <span style="font-size:11px;background:#fff3e0;color:#bf360c;padding:2px 9px;border-radius:10px;border:1px solid #ffcc80">국어 ${sc.kor}학점</span>
+        <span style="font-size:11px;background:#e3f2fd;color:#1565c0;padding:2px 9px;border-radius:10px;border:1px solid #90caf9">영어 ${sc.eng}학점</span>
+        <span style="font-size:11px;background:#e8f5e9;color:#2e7d32;padding:2px 9px;border-radius:10px;border:1px solid #a5d6a7">수학 ${sc.mat}학점</span>
+      </div>
+      <div style="font-size:10px;color:#aaa;margin-top:6px">1학년 기본 포함 (국어${BASE_KOR}+수학${BASE_MAT}+영어${BASE_ENG}학점) · 전체 선택 학점: ${totalCred}학점</div>
+      ${kemOver ? '<div style="font-size:10px;color:#c62828;margin-top:4px;background:#ffebee;padding:4px 8px;border-radius:4px">국·영·수 81학점 한도를 초과했습니다. 일부 과목을 취소해주세요.</div>' : ''}
+    `;
+  }
+
+  // Roadmap button state
+  const rmBtn = document.getElementById('rmOpenBtn');
+  if(rmBtn) {
+    if(isAllComplete()) {
+      rmBtn.classList.add('ready');
+      rmBtn.textContent = '✅ 나의 로드맵 보기';
+    } else {
+      rmBtn.classList.remove('ready');
+      rmBtn.textContent = '📋 나의 로드맵 보기';
+    }
+  }
+}
+
+function getCourseLocation(name) {
+  const locs = COURSE_LOCATION[name];
+  if(!locs || locs.length===0) return '';
+  return locs.map(l=>`${l.sem}`).join(' / ');
+}
+
+function findGroup(groupId) {
+  for(const sem of SEMESTERS)
+    for(const grp of sem.groups)
+      if(grp.id===groupId) return grp;
+  return null;
+}
+
+function resetAll() {
+  if(!confirm('전체 선택을 초기화하시겠습니까?')) return;
+  Object.keys(selections).forEach(k => selections[k].clear());
+  ['ext1','ext2','ext3','ext4','ext5'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.checked = false;
+  });
+  renderSemester(currentSem);
+  renderSemNav();
+  updateDiploma();
+}
+
+// ═══════════════════════════════════════════════════════
+// CREDIT RULES  (국·영·수 81학점 / 174학점 초과 규정)
+// ═══════════════════════════════════════════════════════
+const KEM_LIMIT = 81; // 국·영·수 총합 상한
+const BASE_KOR = 6;   // 1학년 국어 고정 학점
+const BASE_MAT = 10;  // 1학년 수학 고정 학점 (공통수학1·2 + 대수, 3+3+4)
+const BASE_ENG = 6;   // 1학년 영어 고정 학점
+
+function getCourseSubject(courseName, groupId) {
+  // 전용 교과군 → 군 자체가 교과 결정
+  if(/_kor$/.test(groupId)) return 'kor';
+  if(/_eng$/.test(groupId)) return 'eng';
+  if(/_mat$/.test(groupId)) {
+    // g32_mat은 '수학/기타' — 명백한 비수학 과목 제외
+    if(groupId === 'g32_mat' && /미술|스포츠/.test(courseName)) return null;
+    return 'mat';
+  }
+  // 자유·탐구·순증 군 → 과목명으로 판별
+  if(/IB 영어|영어 발표와 토론|영미 문학 읽기|세계 문화와 영어|미디어 영어/.test(courseName)) return 'eng';
+  if(/IB 언어와 문학/.test(courseName)) return 'kor';
+  if(/^(문학과 영상|독서 토론과 글쓰기|주제 탐구 독서)$/.test(courseName)) return 'kor';
+  if(/IB 수학|AP미적분학|고급 미적분|선형대수학|전문 수학/.test(courseName)) return 'mat';
+  if(/^(미적분[ⅠⅡ]|통합수학Ⅰ|이산 수학|고급 대수|실용 통계|확률과 통계|경제 수학)$/.test(courseName)) return 'mat';
+  return null;
+}
+
+function calcSubjectCredits() {
+  let kor=BASE_KOR, mat=BASE_MAT, eng=BASE_ENG; // 1학년 기본 학점 포함
+  SEMESTERS.forEach(sem => {
+    sem.groups.forEach(grp => {
+      selections[grp.id].forEach(name => {
+        const s = getCourseSubject(name, grp.id);
+        if(s==='kor') kor += grp.credits;
+        else if(s==='mat') mat += grp.credits;
+        else if(s==='eng') eng += grp.credits;
+      });
+    });
+  });
+  return {kor, mat, eng, total: kor+mat+eng};
+}
+
+function calcTotalCredits() {
+  let t=0;
+  SEMESTERS.forEach(sem => sem.groups.forEach(grp => { t += selections[grp.id].size * grp.credits; }));
+  return t;
+}
+
+// ── 선수과목 헬퍼 ──────────────────────────────────────
+function isPrereqSatisfied(courseName) {
+  const rule = PREREQS[courseName];
+  if (!rule) return true;
+  const all = getAllSelected();
+  return rule.type === 'all'
+    ? rule.courses.every(c => all.has(c))
+    : rule.courses.some(c => all.has(c));
+}
+
+function getPrereqMessage(courseName) {
+  const rule = PREREQS[courseName];
+  if (!rule) return null;
+  if (rule.type === 'all')
+    return `선수과목 미이수: [${rule.courses.join(', ')}] 먼저 선택해야 합니다`;
+  return `선수과목 미이수: [${rule.courses.join(' / ')}] 중 1과목 먼저 선택해야 합니다`;
+}
+
+// 모든 선택 과목 중 선수과목 규정이 깨진 과목을 연쇄 취소 (stable 상태까지 반복)
+function enforceAllPrereqs() {
+  const removed = [];
+  let changed = true;
+  while (changed) {
+    changed = false;
+    SEMESTERS.forEach(sem => sem.groups.forEach(grp => {
+      selections[grp.id].forEach(name => {
+        if (!isPrereqSatisfied(name)) {
+          selections[grp.id].delete(name);
+          removed.push(name);
+          changed = true;
+        }
+      });
+    }));
+  }
+  return removed;
+}
+
+// 현재 탭의 과목 버튼에 선수과목 잠금 시각 반영
+function isSelectedElsewhere(courseName, exceptGroupId) {
+  return SEMESTERS.some(sem => sem.groups.some(grp =>
+    grp.id !== exceptGroupId && selections[grp.id].has(courseName)
+  ));
+}
+
+function refreshPrereqVisuals() {
+  document.querySelectorAll('.ci').forEach(ciEl => {
+    const inp = ciEl.querySelector('input');
+    if (!inp || inp.value === '(선택 안 함)') return;
+    const courseName = inp.value;
+    const groupId = inp.name;
+
+    const elsewhere = isSelectedElsewhere(courseName, groupId);
+    const locked = !elsewhere && !isPrereqSatisfied(courseName);
+
+    ciEl.classList.toggle('already-taken', elsewhere);
+    ciEl.classList.toggle('prereq-locked', locked);
+    inp.disabled = elsewhere || locked;
+
+    if (elsewhere) {
+      ciEl.title = '다른 학기에서 이미 선택된 과목입니다';
+    } else if (locked) {
+      const rule = PREREQS[courseName];
+      ciEl.title = rule.type === 'all'
+        ? `선수과목 필요: ${rule.courses.join(', ')}`
+        : `선수과목 필요: ${rule.courses.join(' 또는 ')}`;
+    } else {
+      ciEl.title = '';
+    }
+  });
+}
+
+// 과목 추가 전 학점 규정 위반 여부 확인. 위반 시 메시지 반환, 정상이면 null
+function wouldExceedLimit(groupId, addCourse, removeCourse=null) {
+  const grp = findGroup(groupId);
+  const sAdd = getCourseSubject(addCourse, groupId);
+  const sRem = removeCourse ? getCourseSubject(removeCourse, groupId) : null;
+  const cur = calcSubjectCredits();
+
+  // Rule 1: 국·영·수 합계 81학점 초과 금지
+  let newTotal = cur.total;
+  if(sRem) newTotal -= grp.credits;
+  if(sAdd) newTotal += grp.credits;
+  if(newTotal > KEM_LIMIT) {
+    return `국·영·수 이수학점 합계가 81학점을 초과합니다 (현재 ${cur.total}학점 → ${newTotal}학점)`;
+  }
+
+  // Rule 2: 순증선택(174학점 초과분)에서 국·영·수 비율 50% 초과 금지
+  if(grp.optional && sAdd) {
+    const incGroups = ['g31_inc','g32_inc'];
+    let excTotal=0, excSubj=0;
+    incGroups.forEach(gid => {
+      const g = findGroup(gid);
+      // 현재 추가 중인 그룹은 신규 선택으로 시뮬레이션
+      const sel = gid===groupId
+        ? [addCourse]
+        : [...selections[gid]].filter(n => n!=='(선택 안 함)');
+      if(sel.length > 0) {
+        excTotal += g.credits;
+        if(getCourseSubject(sel[0], gid)) excSubj += g.credits;
+      }
+    });
+    if(excTotal > 0 && excSubj > excTotal / 2) {
+      return `174학점 초과분(${excTotal}학점)의 국·영·수 비율이 50%를 초과합니다 (국·영·수 ${excSubj}학점)`;
+    }
+  }
+  return null;
+}
+
+// ═══════════════════════════════════════════════════════
+// ROADMAP
+// ═══════════════════════════════════════════════════════
+function getIncompleteSemesters() {
+  const result = [];
+  for(const sem of SEMESTERS) {
+    const incomplete = sem.groups.some(grp => !grp.optional && selections[grp.id].size < (grp.maxSel||1));
+    if(incomplete) result.push(sem.id);
+  }
+  return result;
+}
+
+function isAllComplete() {
+  return getIncompleteSemesters().length === 0;
+}
+
+function showRoadmap() {
+  buildRoadmap();
+  document.getElementById('rmOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeRoadmap() {
+  document.getElementById('rmOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function handleOverlayClick(e) {
+  if(e.target.id === 'rmOverlay') closeRoadmap();
+}
+
+function buildRoadmap() {
+  const all = getAllSelected();
+  const rules = getCurrentRules();
+  const rmSub = document.getElementById('rmSubtitle');
+  if(rmSub) rmSub.textContent = `충남삼성고등학교 · ${rules.label}`;
+  const reqOk = rules.required.every(c => all.has(c));
+  const elecGroups2 = rules.elective.map(g => ({ ...g, done: g.pool.filter(c => all.has(c)) }));
+  const elecOk = elecGroups2.length === 0 || elecGroups2.every(g => g.done.length >= g.need);
+  const extIds = ['ext1','ext2','ext3','ext4','ext5'];
+  const extOk = extIds.every(id => document.getElementById(id)?.checked);
+  const sc = calcSubjectCredits();
+  const totalCred = calcTotalCredits();
+  const kemOver = sc.total > KEM_LIMIT;
+  const incompleteSems2 = getIncompleteSemesters();
+  const allComplete = incompleteSems2.length === 0;
+  const diplomaOk = reqOk && elecOk && extOk && !kemOver && allComplete;
+  const honorOk = rules.honor.courses.filter(c => all.has(c)).length >= rules.honor.need;
+  const bilOk = BILINGUAL_COURSES.every(c => all.has(c));
+
+  // Status bar
+  const pillCls = diplomaOk ? 'ok' : (reqOk && elecOk && !kemOver && allComplete ? 'warn' : 'fail');
+  const pillTxt = diplomaOk ? '✓ 디플로마 이수 가능'
+    : kemOver ? `✗ 국·영·수 이수학점 초과 (${sc.total}/${KEM_LIMIT}학점)`
+    : !allComplete ? `✗ ${incompleteSems2.join(', ')} 선택 미완료 (개인별 선택 자리를 채워주세요)`
+    : (reqOk && elecOk && !extOk ? '⚠ 비교과 조건 미충족' : '✗ 이수 불가');
+
+  const chips = [
+    mkChip(reqOk, reqOk ? '✅ 필수과목 완료' : `✗ 필수과목 ${rules.required.filter(c=>!all.has(c)).length}개 미충족`),
+    mkChip(elecOk, elecOk ? `✅ 선택과목 완료` : `✗ 선택과목 미충족 (${elecGroups2.filter(g=>g.done.length<g.need).length}그룹)`),
+    mkChip(extOk, extOk ? '✅ 비교과 완료' : `⚠ 비교과 미충족`, !extOk),
+    mkChip(!kemOver, kemOver ? `⚠ 국·영·수 ${sc.total}/${KEM_LIMIT}학점 초과` : `✅ 국·영·수 ${sc.total}/${KEM_LIMIT}학점`, kemOver),
+  ];
+  if(honorOk) chips.push(`<span class="rm-chip" style="background:#fff8e1;color:#f57f17;border:1px solid #ffe082">🏅 고급 디플로마</span>`);
+  if(bilOk)   chips.push(`<span class="rm-chip" style="background:#e3f2fd;color:#1565c0;border:1px solid #90caf9">🌐 이중언어 디플로마</span>`);
+
+  document.getElementById('rmStatus').innerHTML =
+    `<div class="rm-pill ${pillCls}">${pillTxt}</div>
+     <div class="rm-chips">${chips.join('')}</div>
+     <div style="margin-left:auto;font-size:11px;color:#888;white-space:nowrap">
+       국어 ${sc.kor} · 영어 ${sc.eng} · 수학 ${sc.mat}학점 &nbsp;|&nbsp; 전체 ${totalCred}학점
+     </div>`;
+
+  // Grid — 4 semester columns
+  document.getElementById('rmGrid').innerHTML = SEMESTERS.map(sem => {
+    let totalCnt = 0;
+    const groupsHtml = sem.groups.map(grp => {
+      const chosen = [...selections[grp.id]];
+      if(!chosen.length) return '';
+      totalCnt += chosen.length;
+      const isOptGrp = grp.optional;
+
+      const coursesHtml = chosen.map(name => {
+        const tag = isOptGrp ? 'opt' : getCourseTag(name);
+        let cls='c-none', icon='';
+        if(tag==='opt')      { cls='c-opt'; icon='+'; }
+        else if(tag==='req') { cls='c-req'; icon='★'; }
+        else if(tag==='elec'){ cls='c-elec'; icon='◆'; }
+        else if(tag==='bil') { cls='c-bil'; icon='♣'; }
+        return `<div class="rm-course ${cls}">${icon?`<span class="rm-icon">${icon}</span>`:''}<span>${name}</span></div>`;
+      }).join('');
+
+      return `<div class="rm-grp">
+        <div class="rm-grp-lbl">${grp.label}</div>
+        ${coursesHtml}
+      </div>`;
+    }).filter(Boolean).join('');
+
+    return `<div class="rm-col">
+      <div class="rm-col-hd">
+        <div class="cs">${sem.label}</div>
+        <div class="cc">${totalCnt}과목 선택</div>
+      </div>
+      ${groupsHtml || '<div class="rm-empty">선택된 과목 없음</div>'}
+    </div>`;
+  }).join('');
+}
+
+function mkChip(ok, label, isWarn=false) {
+  const bg = ok ? '#e8f5e9' : (isWarn ? '#fff8e1' : '#ffebee');
+  const co = ok ? '#2e7d32' : (isWarn ? '#e65100' : '#c62828');
+  const bd = ok ? '#a5d6a7' : (isWarn ? '#ffe082' : '#ef9a9a');
+  return `<span class="rm-chip" style="background:${bg};color:${co};border:1px solid ${bd}">${label}</span>`;
+}
+
+// ═══════════════════════════════════════════════════════
+// PANEL → LEFT SELECTION
+// ═══════════════════════════════════════════════════════
+function selectCourseFromPanel(courseName) {
+  // Find the group that contains this course
+  var targetSem = null, targetGrp = null;
+  outer: for (var i = 0; i < SEMESTERS.length; i++) {
+    for (var j = 0; j < SEMESTERS[i].groups.length; j++) {
+      var grp = SEMESTERS[i].groups[j];
+      for (var k = 0; k < grp.courses.length; k++) {
+        if (grp.courses[k].n === courseName) {
+          targetSem = SEMESTERS[i];
+          targetGrp = grp;
+          break outer;
+        }
+      }
+    }
+  }
+  if (!targetGrp) return;
+
+  // Switch to the correct semester tab
+  if (targetSem.id !== currentSem) {
+    switchSem(targetSem.id);
+  }
+
+  var alreadySelected = selections[targetGrp.id].has(courseName);
+  var inp = null;
+  document.querySelectorAll('input[name="' + targetGrp.id + '"]').forEach(function(el) {
+    if (el.value === courseName) inp = el;
+  });
+  if (!inp || inp.disabled) return;
+
+  if (alreadySelected && targetGrp.type !== 'single') {
+    // Checkbox: toggle off
+    inp.checked = false;
+    inp.dispatchEvent(new Event('change', { bubbles: true }));
+  } else if (!alreadySelected) {
+    // Select the course
+    inp.checked = true;
+    inp.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+  // Scroll into view
+  var card = document.getElementById('card_' + targetGrp.id);
+  if (card) {
+    card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    card.style.outline = '2px solid #5c6bc0';
+    setTimeout(function() { card.style.outline = ''; }, 800);
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// TUTORIAL
+// ═══════════════════════════════════════════════════════
+var tutCurrentStep = 1;
+var TUT_TOTAL = 4;
+var TUT_KEY = 'cnsa_tut_seen_v1';
+
+function openTutorial() {
+  tutCurrentStep = 1;
+  goTutStep(1);
+  document.getElementById('tutOverlay').classList.add('open');
+}
+
+function closeTutorial() {
+  document.getElementById('tutOverlay').classList.remove('open');
+}
+
+function goTutStep(n) {
+  document.querySelectorAll('.tut-step').forEach(function(el) { el.classList.remove('active'); });
+  document.querySelectorAll('.tut-dot').forEach(function(el, i) { el.classList.toggle('active', i === n-1); });
+  var step = document.getElementById('tutStep' + n);
+  if (step) step.classList.add('active');
+  document.getElementById('tutStepLbl').textContent = n + ' / ' + TUT_TOTAL;
+  document.getElementById('tutPrevBtn').style.display = n === 1 ? 'none' : '';
+  var nextBtn = document.getElementById('tutNextBtn');
+  if (n === TUT_TOTAL) {
+    nextBtn.textContent = '시작하기 ✓';
+    nextBtn.className = 'tut-btn tut-btn-done';
+  } else {
+    nextBtn.textContent = '다음 →';
+    nextBtn.className = 'tut-btn tut-btn-next';
+  }
+  tutCurrentStep = n;
+}
+
+function tutNext() {
+  if (tutCurrentStep < TUT_TOTAL) { goTutStep(tutCurrentStep + 1); }
+  else { closeTutorial(); }
+}
+
+function tutPrev() {
+  if (tutCurrentStep > 1) { goTutStep(tutCurrentStep - 1); }
+}
+
+// ═══════════════════════════════════════════════════════
+// ERROR POPUP
+// ═══════════════════════════════════════════════════════
+function showError(msg, stack, source) {
+  document.getElementById('errMsg').textContent = msg || '알 수 없는 오류가 발생했습니다.';
+  document.getElementById('errStack').textContent = stack || '(스택 정보 없음)';
+  document.getElementById('errStack').classList.remove('open');
+  document.getElementById('errToggle').textContent = '▼ 상세 정보 보기';
+  document.getElementById('errMeta').textContent =
+    '발생 시각: ' + new Date().toLocaleString('ko-KR') + (source ? ' · 위치: ' + source : '');
+  document.getElementById('errOverlay').classList.add('open');
+}
+
+function closeErr() {
+  document.getElementById('errOverlay').classList.remove('open');
+}
+
+function toggleErrStack() {
+  const el = document.getElementById('errStack');
+  el.classList.toggle('open');
+  document.getElementById('errToggle').textContent =
+    el.classList.contains('open') ? '▲ 상세 정보 숨기기' : '▼ 상세 정보 보기';
+}
+
+function copyErrInfo() {
+  const msg  = document.getElementById('errMsg').textContent;
+  const stk  = document.getElementById('errStack').textContent;
+  const meta = document.getElementById('errMeta').textContent;
+  const text = '[CNSA 디플로마 오류]\n' + msg + '\n\n' + meta + '\n\n' + stk;
+  navigator.clipboard.writeText(text).then(function() {
+    const btn = document.querySelector('.err-btn-copy');
+    btn.textContent = '✅ 복사됨';
+    setTimeout(function(){ btn.textContent = '📋 복사'; }, 2000);
+  });
+}
+
+window.onerror = function(msg, src, line, col, err) {
+  showError(
+    typeof msg === 'string' ? msg : String(msg),
+    err && err.stack ? err.stack : (src + ' (' + line + ':' + col + ')'),
+    src + ':' + line
+  );
+  return true;
+};
+
+window.addEventListener('unhandledrejection', function(e) {
+  var reason = e.reason;
+  showError(
+    reason && reason.message ? reason.message : String(reason),
+    reason && reason.stack ? reason.stack : null,
+    'Promise'
+  );
+});
+
+// ═══════════════════════════════════════════════════════
+// RECOMMENDED ROADMAP POPUP
+// ═══════════════════════════════════════════════════════
+var RR_GRP_LABELS = {kor:'국어',mat:'수학',eng:'영어',exp:'탐구활동',free:'자유 선택',inc:'순증 선택'};
+var RR_SEM_LABELS = {'2-1':'2학년 1학기','2-2':'2학년 2학기','3-1':'3학년 1학기','3-2':'3학년 2학기'};
+
+function showRoadmapRec() {
+  var prog = document.getElementById('currSelect').value;
+  document.getElementById('rrProgSel').value = prog;
+  buildRoadmapRec();
+  document.getElementById('rrOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeRoadmapRec() {
+  document.getElementById('rrOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function handleRrOverlayClick(e) {
+  if (e.target.id === 'rrOverlay') closeRoadmapRec();
+}
+
+function buildRoadmapRec() {
+  var prog = document.getElementById('rrProgSel').value;
+  var map = RECOMMENDED_ROADMAPS[prog];
+  var rules = ALL_DIPLOMA_RULES[prog] || ALL_DIPLOMA_RULES['수학'];
+  var grid = document.getElementById('rrGrid');
+  if (!map) {
+    grid.innerHTML = '<div style="padding:24px;color:#aaa;text-align:center;grid-column:1/-1">추천 로드맵 데이터가 없습니다.</div>';
+    return;
+  }
+  var cols = ['2-1','2-2','3-1','3-2'].map(function(semId) {
+    var semMap = map[semId];
+    var prefix = 'g' + semId.replace('-','') + '_';
+    var grpOrder = [prefix+'kor', prefix+'mat', prefix+'eng', prefix+'exp', prefix+'free', prefix+'inc'];
+    var semHtml = '';
+    if (!semMap) {
+      semHtml = '<div class="rr-empty">별도 추천 예시 없음<br><small style="font-size:9px;display:block;margin-top:4px">자유롭게 선택하세요</small></div>';
+    } else {
+      grpOrder.forEach(function(gid) {
+        var val = semMap[gid];
+        if (val === undefined) return;
+        var grpKey = gid.replace(/^g\d+_/, '');
+        var lbl = RR_GRP_LABELS[grpKey] || grpKey;
+        var courses = Array.isArray(val) ? val : [val];
+        var coursesHtml = courses.map(function(c) {
+          var cls = rrCourseCls(c, grpKey, rules);
+          var icon = rrCourseIcon(c, grpKey, rules);
+          var label = c === INDIVIDUAL_CHOICE ? '개인별 선택 (직접 고르세요)' : c;
+          return '<div class="rr-course ' + cls + '">' +
+            (icon ? '<span style="font-size:9px;flex-shrink:0">' + icon + '</span>' : '') +
+            '<span>' + label + '</span></div>';
+        }).join('');
+        semHtml += '<div class="rr-grp"><div class="rr-grp-lbl">' + lbl + '</div>' + coursesHtml + '</div>';
+      });
+    }
+    return '<div class="rr-col">' +
+      '<div class="rr-col-hd"><div class="rr-sem">' + RR_SEM_LABELS[semId] + '</div>' +
+      (!semMap ? '<div class="rr-no-data">추천 예시 없음</div>' : '') +
+      '</div>' + (semHtml || '<div class="rr-empty">데이터 없음</div>') + '</div>';
+  });
+  grid.innerHTML = cols.join('');
+}
+
+function rrCourseCls(courseName, grpKey, rules) {
+  if (courseName === INDIVIDUAL_CHOICE) return 'rr-c-individual';
+  if (grpKey === 'kor') return 'rr-c-kor';
+  if (grpKey === 'mat') return 'rr-c-mat';
+  if (grpKey === 'eng') return 'rr-c-eng';
+  if (grpKey === 'inc') return 'rr-c-opt';
+  if (BILINGUAL_COURSES.indexOf(courseName) >= 0) return 'rr-c-bil';
+  if (rules.required.indexOf(courseName) >= 0) return 'rr-c-req';
+  if (rules.elective.some(function(g) { return g.pool.indexOf(courseName) >= 0; })) return 'rr-c-elec';
+  return 'rr-c-other';
+}
+
+function rrCourseIcon(courseName, grpKey, rules) {
+  if (courseName === INDIVIDUAL_CHOICE) return '🙋';
+  if (grpKey === 'inc') return '+';
+  if (BILINGUAL_COURSES.indexOf(courseName) >= 0) return '♣';
+  if (rules.required.indexOf(courseName) >= 0) return '★';
+  if (rules.elective.some(function(g) { return g.pool.indexOf(courseName) >= 0; })) return '◆';
+  return '';
+}
+
+function applyRoadmapRec() {
+  var prog = document.getElementById('rrProgSel').value;
+  var map = RECOMMENDED_ROADMAPS[prog];
+  if (!map) return;
+  if (!confirm(prog + ' 디플로마 추천 로드맵을 적용하시겠습니까?\n현재 선택된 과목이 모두 초기화되고 추천 과목으로 설정됩니다.')) return;
+
+  Object.keys(selections).forEach(function(k) { selections[k].clear(); });
+  ['ext1','ext2','ext3','ext4','ext5'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.checked = false;
+  });
+
+  ['2-1','2-2','3-1','3-2'].forEach(function(semId) {
+    var semMap = map[semId];
+    if (!semMap) return;
+    var prefix = 'g' + semId.replace('-','') + '_';
+    [prefix+'kor', prefix+'mat', prefix+'eng', prefix+'exp', prefix+'free', prefix+'inc'].forEach(function(gid) {
+      var val = semMap[gid];
+      if (val === undefined) return;
+      var sel = selections[gid];
+      if (!sel) return;
+      var grpKey = gid.replace(/^g\d+_/, '');
+      if (Array.isArray(val)) {
+        if (grpKey === 'free') {
+          val.forEach(function(c) { if (c !== INDIVIDUAL_CHOICE) sel.add(c); });
+        } else {
+          // kor/mat/eng는 단일 선택 그룹이므로 대안 목록 중 첫 과목만 적용한다
+          var pick = val.find(function(c) { return c !== INDIVIDUAL_CHOICE; });
+          if (pick) sel.add(pick);
+        }
+      } else if (val !== INDIVIDUAL_CHOICE) { sel.add(val); }
+    });
+  });
+
+  // Switch program if needed
+  var currSel = document.getElementById('currSelect');
+  if (currSel && currSel.value !== prog) {
+    currSel.value = prog;
+  }
+
+  enforceAllPrereqs();
+  renderSemester(currentSem);
+  renderSemNav();
+  updateDiploma();
+
+  // 적용 후 상태 점검: 국·영·수 한도 초과 + 채워지지 않은 필수 선택 그룹(선수과목 자동취소로 빈 자리가 생긴 경우 포함)
+  var warnMsgs = [];
+
+  var scAfter = calcSubjectCredits();
+  if (scAfter.total > KEM_LIMIT) {
+    warnMsgs.push(`⚠ 국·영·수 이수학점 합계가 ${scAfter.total}학점으로 81학점 한도를 초과합니다. 자유 선택 과목 중 국·영·수로 집계되는 과목을 줄여주세요.`);
+  }
+
+  var incomplete = [];
+  SEMESTERS.forEach(function(sem) {
+    sem.groups.forEach(function(grp) {
+      if (grp.optional) return;
+      var need = grp.maxSel || 1;
+      var have = selections[grp.id].size;
+      if (have < need) incomplete.push(`${sem.label} · ${grp.label} (${have}/${need}과목)`);
+    });
+  });
+  if (incomplete.length > 0) {
+    warnMsgs.push(`⚠ 아래 항목은 아직 과목이 다 채워지지 않았습니다. 학교 예시에서 "개인별 선택"으로 안내된 자리이거나 선수과목 미충족으로 자동 취소된 과목일 수 있으니, 진로에 맞는 과목을 직접 골라 나머지를 채워주세요:\n- ` + incomplete.join('\n- '));
+  }
+
+  if (warnMsgs.length > 0) {
+    alert(`${prog} 추천 로드맵을 적용했습니다. 아직 이수 조건이 완전히 충족되지 않았습니다.\n\n` + warnMsgs.join('\n\n'));
+  }
+
+  closeRoadmapRec();
+}
+
+// ── Boot
+init();
+setTimeout(openTutorial, 400);
+
+</script>
+</body>
+</html>
