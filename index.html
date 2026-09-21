@@ -299,6 +299,23 @@ header .year-badge{background:#ffd54f;color:#1a237e;padding:3px 12px;border-radi
 .err-btn-close{background:#ffebee;color:#c62828}
 .err-btn-close:hover{background:#ffcdd2}
 
+/* ── PRIVACY POLICY POPUP ─────────────── */
+.priv-link{background:transparent;border:none;color:rgba(255,255,255,.75);font-size:11px;cursor:pointer;text-decoration:underline;padding:0;margin-top:2px}
+.priv-link:hover{color:#fff}
+.priv-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;align-items:center;justify-content:center;padding:16px}
+.priv-overlay.open{display:flex}
+.priv-modal{background:#fff;border-radius:12px;width:100%;max-width:640px;max-height:82vh;box-shadow:0 24px 64px rgba(0,0,0,.35);overflow:hidden;display:flex;flex-direction:column;animation:errIn .2s ease}
+.priv-hd{background:#1a237e;color:#fff;padding:16px 22px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.priv-hd h3{font-size:15px;font-weight:700}
+.priv-close-btn{background:rgba(255,255,255,.2);border:none;color:#fff;width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:13px;line-height:1;flex-shrink:0}
+.priv-close-btn:hover{background:rgba(255,255,255,.35)}
+.priv-body{padding:20px 22px;overflow-y:auto;font-size:13px;line-height:1.7;color:#333}
+.priv-body h4{font-size:13px;font-weight:700;color:#1a237e;margin:16px 0 6px}
+.priv-body h4:first-child{margin-top:0}
+.priv-body p{margin:0 0 4px}
+.priv-fill{background:#fff8e1;color:#e65100;border:1px dashed #ffb74d;border-radius:4px;padding:1px 6px;font-weight:600}
+.priv-foot{padding:10px 22px 16px;font-size:11px;color:#999;flex-shrink:0}
+
 @media print{
   @page{size:A4 landscape;margin:.7cm .9cm}
   *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
@@ -337,6 +354,7 @@ header .year-badge{background:#ffd54f;color:#1a237e;padding:3px 12px;border-radi
         <span class="proto-badge">PROTOTYPE</span>
       </div>
       <div class="subtitle">충남삼성고등학교</div>
+      <button class="priv-link" onclick="openPrivacy()">🔒 개인정보처리방침</button>
     </div>
   </div>
   <button class="rm-open-btn" id="rmOpenBtn" onclick="showRoadmap()">📋 나의 로드맵 보기</button>
@@ -583,6 +601,43 @@ header .year-badge{background:#ffd54f;color:#1a237e;padding:3px 12px;border-radi
   </div>
 </div>
 
+<!-- ── PRIVACY POLICY POPUP ── -->
+<div class="priv-overlay" id="privOverlay" onclick="handlePrivOverlayClick(event)">
+  <div class="priv-modal">
+    <div class="priv-hd">
+      <h3>🔒 개인정보처리방침</h3>
+      <button class="priv-close-btn" onclick="closePrivacy()">✕</button>
+    </div>
+    <div class="priv-body">
+      <h4>1. 개인정보 수집 항목 및 목적</h4>
+      <p>본 프로그램(학업 설계 프로그램)은 이름, 학번, 연락처 등 어떠한 개인정보도 수집하지 않습니다. 화면에서 선택한 디플로마 과정과 과목 선택 내용은 서버로 전송되거나 어디에도 저장되지 않으며, 브라우저 화면을 새로고침하거나 닫으면 즉시 사라지는 일회성 정보입니다.</p>
+
+      <h4>2. 개인정보 보유 및 이용 기간</h4>
+      <p>수집하는 개인정보가 없으므로 해당 사항이 없습니다.</p>
+
+      <h4>3. 개인정보의 안전성 확보 조치</h4>
+      <p>본 프로그램은 별도의 서버, 데이터베이스, 외부 API 연동 없이 사용자의 브라우저 안에서만 동작하는 정적(static) 프로그램입니다. 입력한 모든 선택 내용은 브라우저 메모리에만 일시적으로 존재하며, 외부로 전송되지 않습니다.</p>
+
+      <h4>4. 이용자의 열람·정정·삭제·처리정지 요구</h4>
+      <p>본 프로그램이 보유·저장하는 개인정보가 없으므로 열람·정정·삭제·처리정지를 요청할 대상 정보 자체가 존재하지 않습니다. 프로그램 이용 중 궁금한 점이 있으면 아래 개인정보 보호책임자에게 문의해 주세요.</p>
+
+      <h4>5. 만 14세 미만 아동의 개인정보 보호</h4>
+      <p>본 프로그램은 충남삼성고등학교 재학생(만 14세 이상)을 대상으로 제공되며, 만 14세 미만 아동을 이용 대상으로 하지 않습니다. 개인정보를 수집하지 않으므로 법정대리인 동의 절차 또한 해당 사항이 없습니다.</p>
+
+      <h4>6. 개인정보 보호책임자</h4>
+      <p>담당(성명/직책): <span class="priv-fill">학교에서 입력 필요</span></p>
+      <p>연락처(전화/이메일): <span class="priv-fill">학교에서 입력 필요</span></p>
+
+      <h4>7. 개인정보의 제3자 제공 및 처리 위탁</h4>
+      <p>본 프로그램은 개인정보를 수집하지 않으므로, 개인정보를 제3자에게 제공하거나 외부 기관·업체에 처리를 위탁하는 경우가 없습니다.</p>
+
+      <h4>시행일</h4>
+      <p><span class="priv-fill">YYYY년 M월 D일</span></p>
+    </div>
+    <div class="priv-foot">학업 설계 프로그램 · 충남삼성고등학교</div>
+  </div>
+</div>
+
 <!-- ── RECOMMENDED ROADMAP POPUP ── -->
 <div class="rr-overlay" id="rrOverlay" onclick="handleRrOverlayClick(event)">
   <div class="rr-modal">
@@ -628,7 +683,7 @@ header .year-badge{background:#ffd54f;color:#1a237e;padding:3px 12px;border-radi
 const ALL_DIPLOMA_RULES = {
   수학: {
     label: '수학 디플로마',
-    required: ['미적분Ⅱ','확률과 통계','기하','융합과학 탐구'],
+    required: ['미적분Ⅱ','확률과 통계','기하','주제 탐구(R&E) 심화'],
     elective: [
       { pool:['고급 미적분','고급 대수','이산 수학','선형대수학','AP미적분학Ⅰ'], need:3, label:'선택' }
     ],
@@ -656,7 +711,7 @@ const ALL_DIPLOMA_RULES = {
     label: '생명과학 디플로마',
     required: ['생명과학','생물의 유전','세포와 물질대사','융합과학 탐구'],
     elective: [
-      { pool:['생명과학 실험','고급 생명과학','생명 공학 기술','농업 이해'], need:2, label:'선택 Ⅰ' },
+      { pool:['생명과학 실험','고급 생명과학','생명 공학 기술','농업 이해','기후변화와 환경생태','식품과 영양','보건'], need:2, label:'선택 Ⅰ' },
       { pool:['생태와 환경','기초 조리','생활과학 탐구'], need:1, label:'선택 Ⅱ' }
     ],
     honor: { courses:['고급 생명과학'], need:1, label:'고급 생명과학 이수 및 성취율 80% 이상' }
@@ -665,7 +720,7 @@ const ALL_DIPLOMA_RULES = {
     label: '공학 디플로마',
     required: ['물리학','창의 공학 설계','융합과학 탐구'],
     elective: [
-      { pool:['지식 재산 일반','로봇과 공학세계','발명과 디자인'], need:2, label:'선택 Ⅰ' },
+      { pool:['물리학 실험','지식 재산 일반','로봇과 공학세계','발명과 디자인'], need:2, label:'선택 Ⅰ' },
       { pool:['역학과 에너지','물질과 에너지','전자기와 양자','고급 물리학','고급 미적분'], need:2, label:'선택 Ⅱ' }
     ],
     honor: { courses:['고급 물리학'], need:1, label:'고급 물리학 이수 및 성취율 80% 이상' }
@@ -681,35 +736,39 @@ const ALL_DIPLOMA_RULES = {
   },
   인문학: {
     label: '인문학 디플로마',
-    required: ['경제','사회문제 탐구','문학과 영상','세계사','현대사회와 윤리','소설 창작','빅 히스토리'],
+    required: ['경제','사회문제 탐구','문학과 영상','세계사','현대사회와 윤리','소설 창작','논리와 사고'],
     elective: [
-      { pool:['세계 역사와 문화','사회 문제와 윤리','독서 토론과 글쓰기','논술','논리와 사고'], need:1, label:'선택' }
+      { pool:['세계 역사와 문화','사회 문제와 윤리','독서 토론과 글쓰기','논술','문학 감상과 비평','빅 히스토리','삶과 종교'], need:2, label:'선택' }
     ],
-    honor: { courses:['소설 창작','빅 히스토리'], need:2, label:'소설 창작, 빅 히스토리 2과목 모두 이수 및 성취율 80% 이상' }
+    honor: { courses:['문학 감상과 비평','빅 히스토리'], need:2, label:'문학 감상과 비평, 빅 히스토리 2과목 모두 이수 및 성취율 80% 이상' }
   },
   국제어문: {
     label: '국제어문 디플로마',
-    required: ['경제','사회문제 탐구'],
+    required: ['경제','주제 탐구(R&E) 심화'],
     elective: [
-      { pool:['영미 문학 읽기','일본어 회화Ⅰ','중국어 회화','심화 일본어','심화 중국어','영어 발표와 토론','영어 독해와 작문','세계 문화와 영어','중국 언어와 역사의 이해1','중국 언어와 역사의 이해2','일본어 회화Ⅱ','미디어 영어','일본 문화'], need:4, label:'선택' }
+      { pool:['영미 문학 읽기','일본어 회화','중국어 회화','심화 일본어','심화 중국어','영어 발표와 토론','영어 독해와 작문','세계 문화와 영어','중국 언어와 역사의 이해1','중국 언어와 역사의 이해2','미디어 영어'], need:4, label:'선택' }
     ],
-    honor: { courses:['영미 문학 읽기','영어 발표와 토론'], need:2, label:'영미 문학 읽기, 영어 발표와 토론 2과목 모두 이수 및 성취율 80% 이상 (또는 심화 중국어, 일본어 회화Ⅱ 중 1과목 이수 및 성취율 80% 이상)' }
+    honor: { courses:['영미 문학 읽기','영어 발표와 토론'], need:2, label:'영미 문학 읽기, 영어 발표와 토론 2과목 모두 이수 및 성취율 80% 이상 (혹은 심화 중국어, 심화 일본어 중 1과목 이수 및 성취율 80% 이상)' }
   },
   사회과학: {
     label: '사회과학 디플로마',
-    required: ['경제','사회문제 탐구','사회와 문화','미래 사회학','미디어와 사회'],
-    elective: [],
+    required: ['경제','사회문제 탐구','사회와 문화','사회학 개론','뉴스와 미디어'],
+    elective: [
+      { pool:['세계사','세계시민과 지리','정치','현대사회와 윤리','국제 정치','금융과 경제생활','기업과 경영','사회 문제와 윤리','통계와 사회','논리와 사고','마케팅과 광고','빅 히스토리','교육의 이해','국제 경제','융합지성사','세계 역사와 문화','역사로 탐구하는 현대 세계','기후변화와 지속가능한 세계'], need:4, label:'선택' }
+    ],
     honor: { courses:['국제 정치'], need:1, label:'국제 정치 이수 및 성취율 80% 이상' }
   },
   경제경영: {
     label: '경제경영 디플로마',
     required: ['경제','사회문제 탐구','기업과 경영','현대 경제 탐구','마케팅과 광고'],
-    elective: [],
+    elective: [
+      { pool:['사회와 문화','국제 정치','금융과 경제생활','사회학 개론','통계와 사회','논리와 사고','뉴스와 미디어','국제 경제','경제 수학','기후변화와 지속가능한 세계'], need:4, label:'선택' }
+    ],
     honor: { courses:['국제 경제'], need:1, label:'국제 경제 이수 및 성취율 80% 이상' }
   },
   예술: {
     label: '예술 디플로마',
-    required: ['미디어 콘텐츠 일반','음악과 미디어'],
+    required: ['미디어 콘텐츠 일반','주제 탐구(R&E) 심화'],
     elective: [
       { pool:['미술 매체 탐구','시각 디자인','드로잉','조형 탐구','미술 전공 실기','시창⋅청음','음악 이론','소설 창작','색채 디자인','영화 제작 실습','합창⋅합주','미술 감상과 비평','무대 미술과 기술','미술 창작','영화 감상과 비평','VR⋅AR 콘텐츠 제작','제품 디자인','도자기 공예'], need:7, label:'선택' }
     ],
@@ -717,8 +776,10 @@ const ALL_DIPLOMA_RULES = {
   },
   체육: {
     label: '체육 디플로마',
-    required: ['스포츠 행정 및 경영','스포츠 생리의학','기초 체육 전공 실기','스포츠 개론','심화 체육 전공 실기','육상','스포츠 경기 체력'],
-    elective: [],
+    required: ['주제 탐구(R&E) 기초','주제 탐구(R&E) 심화','기초 체육 전공 실기','스포츠 개론','심화 체육 전공 실기','육상','스포츠 경기 체력'],
+    elective: [
+      { pool:['스포츠 경기 분석','스포츠 교육','고급 체육 전공 실기','심화 체조 전공 실기','스포츠 경기 기술','심화 육상 단거리 전공 실기','체조'], need:3, label:'선택' }
+    ],
     honor: { courses:['심화 체육 전공 실기','고급 체육 전공 실기','육상','스포츠 경기 체력'], need:2, label:'심화 체육 전공 실기, 고급 체육 전공 실기, 육상, 스포츠 경기 체력 중 2과목 이수 및 성취율 80% 이상' }
   },
   국제자연과학: {
@@ -769,13 +830,13 @@ const SEMESTERS = [
     { id:"g21_kor", label:"국어 선택", type:"single", credits:4, note:"1과목 선택",
       courses:[{n:"IB 언어와 문학 SL Ⅰ"},{n:"독서와 작문"}]},
     { id:"g21_mat", label:"수학 선택", type:"single", credits:4, note:"1과목 선택",
-      courses:[{n:"미적분Ⅰ"},{n:"IB 수학 분석과 접근 SL Ⅰ"},{n:"IB 수학 분석과 접근 HL Ⅰ"}]},
+      courses:[{n:"미적분Ⅰ"},{n:"IB 수학 분석과 접근 HL Ⅰ"}]},
     { id:"g21_eng", label:"영어 선택", type:"single", credits:4, note:"1과목 선택",
       courses:[{n:"영어Ⅰ"},{n:"IB 영어 HL Ⅰ"},{n:"IB 영어 SL Ⅰ"}]},
     { id:"g21_exp", label:"탐구활동 선택", type:"single", credits:3, note:"1과목 선택 (3학점)",
-      courses:[{n:"물리학 실험"},{n:"생명과학 실험"},{n:"정보 과제 연구"},{n:"창의 공학 설계"},{n:"화학 실험"},{n:"경제"},{n:"수학과제 탐구"},{n:"미디어 콘텐츠 일반"},{n:"스포츠 행정 및 경영"},{n:"IB 지식이론 Ⅰ"}]},
+      courses:[{n:"물리학 실험"},{n:"생명과학 실험"},{n:"정보 과제 연구"},{n:"화학 실험"},{n:"경제"},{n:"수학과제 탐구"},{n:"미디어 콘텐츠 일반"},{n:"주제 탐구(R&E) 기초"},{n:"IB 지식이론 Ⅰ"}]},
     { id:"g21_free", label:"자유 선택", type:"multi", credits:4, maxSel:3, note:"3과목 선택 (12학점)",
-      courses:[{n:"물리학"},{n:"생명과학"},{n:"정보과학"},{n:"화학"},{n:"논술"},{n:"문학과 영상"},{n:"이산 수학"},{n:"기업과 경영"},{n:"사회와 문화"},{n:"세계사"},{n:"세계시민과 지리"},{n:"정치"},{n:"현대사회와 윤리"},{n:"기초 체육 전공 실기"},{n:"운동과 건강"},{n:"미술 매체 탐구"},{n:"스포츠 개론"},{n:"시각 디자인"},{n:"시창⋅청음"},{n:"음악 이론"},{n:"영미 문학 읽기"},{n:"일본어 회화Ⅰ"},{n:"중국어 회화"},{n:"IB 물리학 HL Ⅰ"},{n:"IB 일반화학 HL Ⅰ"},{n:"IB 일반화학 SL Ⅰ"},{n:"IB 경제 SL Ⅰ"},{n:"IB 역사 HL Ⅰ"}]},
+      courses:[{n:"물리학"},{n:"생명과학"},{n:"정보과학"},{n:"창의 공학 설계"},{n:"화학"},{n:"논술"},{n:"문학과 영상"},{n:"이산 수학"},{n:"기업과 경영"},{n:"사회와 문화"},{n:"세계사"},{n:"세계시민과 지리"},{n:"정치"},{n:"현대사회와 윤리"},{n:"기초 체육 전공 실기"},{n:"운동과 건강"},{n:"미술 매체 탐구"},{n:"스포츠 개론"},{n:"시각 디자인"},{n:"시창⋅청음"},{n:"음악 이론"},{n:"영미 문학 읽기"},{n:"일본어 회화"},{n:"중국어 회화"},{n:"IB 물리학 HL Ⅰ"},{n:"IB 일반화학 HL Ⅰ"},{n:"IB 일반화학 SL Ⅰ"},{n:"IB 경제 SL Ⅰ"},{n:"IB 역사 HL Ⅰ"}]},
   ]
 },
 {
@@ -784,13 +845,13 @@ const SEMESTERS = [
     { id:"g22_kor", label:"국어 선택", type:"single", credits:4, note:"1과목 선택",
       courses:[{n:"문학"},{n:"IB 언어와 문학 SL Ⅱ"}]},
     { id:"g22_mat", label:"수학 선택", type:"single", credits:4, note:"1과목 선택",
-      courses:[{n:"확률과 통계"},{n:"IB 수학 분석과 접근 SL Ⅱ"},{n:"IB 수학 분석과 접근 HL Ⅱ"}]},
+      courses:[{n:"확률과 통계"},{n:"IB 수학 분석과 접근 HL Ⅱ"}]},
     { id:"g22_eng", label:"영어 선택", type:"single", credits:4, note:"1과목 선택",
       courses:[{n:"영어Ⅱ"},{n:"IB 영어 HL Ⅱ"},{n:"IB 영어 SL Ⅱ"}]},
     { id:"g22_exp", label:"탐구활동 선택", type:"single", credits:3, note:"1과목 선택 (3학점)",
-      courses:[{n:"융합과학 탐구"},{n:"사회문제 탐구"},{n:"스포츠 생리의학"},{n:"음악과 미디어"},{n:"IB 지식이론 Ⅱ"}]},
+      courses:[{n:"융합과학 탐구"},{n:"사회문제 탐구"},{n:"주제 탐구(R&E) 심화"},{n:"IB 지식이론 Ⅱ"}]},
     { id:"g22_free", label:"자유 선택", type:"multi", credits:4, maxSel:3, note:"3과목 선택 (12학점)",
-      courses:[{n:"IB 물리학 HL Ⅱ"},{n:"IB 일반화학 HL Ⅱ"},{n:"IB 일반화학 SL Ⅱ"},{n:"물질과 에너지"},{n:"생명 공학 기술"},{n:"생물의 유전"},{n:"역학과 에너지"},{n:"자료 구조"},{n:"화학 분석"},{n:"독서 토론과 글쓰기"},{n:"소설 창작"},{n:"국제 정치"},{n:"금융과 경제생활"},{n:"현대 경제 탐구"},{n:"미래 사회학"},{n:"사회 문제와 윤리"},{n:"세계 역사와 문화"},{n:"미적분Ⅱ"},{n:"드로잉"},{n:"색채 디자인"},{n:"스포츠 경기 분석"},{n:"스포츠 교육"},{n:"심화 체육 전공 실기"},{n:"영화 제작 실습"},{n:"합창⋅합주"},{n:"IB 경제 SL Ⅱ"},{n:"IB 역사 HL Ⅱ"},{n:"심화 일본어"},{n:"심화 중국어"},{n:"영어 발표와 토론"}]},
+      courses:[{n:"IB 물리학 HL Ⅱ"},{n:"IB 일반화학 HL Ⅱ"},{n:"IB 일반화학 SL Ⅱ"},{n:"물질과 에너지"},{n:"생명 공학 기술"},{n:"생물의 유전"},{n:"역학과 에너지"},{n:"자료 구조"},{n:"화학 분석"},{n:"독서 토론과 글쓰기"},{n:"소설 창작"},{n:"국제 정치"},{n:"금융과 경제생활"},{n:"현대 경제 탐구"},{n:"사회학 개론"},{n:"사회 문제와 윤리"},{n:"세계 역사와 문화"},{n:"미적분Ⅱ"},{n:"드로잉"},{n:"색채 디자인"},{n:"스포츠 경기 분석"},{n:"스포츠 교육"},{n:"심화 체육 전공 실기"},{n:"영화 제작 실습"},{n:"합창⋅합주"},{n:"IB 경제 SL Ⅱ"},{n:"IB 역사 HL Ⅱ"},{n:"심화 일본어"},{n:"심화 중국어"},{n:"영어 발표와 토론"}]},
   ]
 },
 {
@@ -803,9 +864,9 @@ const SEMESTERS = [
     { id:"g31_eng", label:"영어 선택", type:"single", credits:4, note:"1과목 선택",
       courses:[{n:"영어 독해와 작문"},{n:"IB 영어 HL Ⅲ"},{n:"IB 영어 SL Ⅲ"}]},
     { id:"g31_free", label:"자유 선택", type:"multi", credits:4, maxSel:3, note:"3과목 선택 (12학점)",
-      courses:[{n:"물리학"},{n:"생명과학"},{n:"화학"},{n:"논술"},{n:"문학 감상과 비평"},{n:"정보과학"},{n:"경제 수학"},{n:"사회와 문화"},{n:"정치"},{n:"세계시민과 지리"},{n:"영미 문학 읽기"},{n:"미술 매체 탐구"},{n:"시각 디자인"},{n:"음악 이론"},{n:"중국어 회화"},{n:"일본어 회화Ⅰ"},{n:"기초 체육 전공 실기"},{n:"스포츠 개론"},{n:"IB 물리학 HL Ⅲ"},{n:"IB 일반화학 HL Ⅲ"},{n:"IB 일반화학 SL Ⅲ"},{n:"고급 물리학"},{n:"고급 생명과학"},{n:"고급 화학"},{n:"기후변화와 환경생태"},{n:"과학의 역사와 문화"},{n:"에너지와 탄소 중립"},{n:"세포와 물질대사"},{n:"전자기와 양자"},{n:"화학 반응의 세계"},{n:"통계와 사회"},{n:"논리와 사고"},{n:"디지털 논리 회로"},{n:"정보 통신"},{n:"지식 재산 일반"},{n:"IB 역사 HL Ⅲ"},{n:"마케팅과 광고"},{n:"빅 히스토리"},{n:"전문 수학"},{n:"선형대수학"},{n:"IB 수학 분석과 접근 SL Ⅲ"},{n:"IB 수학 분석과 접근 HL Ⅲ"},{n:"세계 문화와 영어"},{n:"미술 창작"},{n:"제품 디자인"},{n:"영화 감상과 비평"},{n:"조형 탐구"},{n:"시창⋅청음"},{n:"중국 언어와 역사의 이해1"},{n:"일본어 회화Ⅱ"},{n:"고급 체육 전공 실기"},{n:"육상"}]},
+      courses:[{n:"물리학"},{n:"생명과학"},{n:"화학"},{n:"논술"},{n:"문학 감상과 비평"},{n:"정보과학"},{n:"경제 수학"},{n:"사회와 문화"},{n:"정치"},{n:"세계시민과 지리"},{n:"영미 문학 읽기"},{n:"미술 매체 탐구"},{n:"시각 디자인"},{n:"음악 이론"},{n:"중국어 회화"},{n:"일본어 회화"},{n:"기초 체육 전공 실기"},{n:"스포츠 개론"},{n:"IB 물리학 HL Ⅲ"},{n:"IB 일반화학 HL Ⅲ"},{n:"IB 일반화학 SL Ⅲ"},{n:"고급 물리학"},{n:"고급 생명과학"},{n:"고급 화학"},{n:"기후변화와 환경생태"},{n:"과학의 역사와 문화"},{n:"에너지와 탄소 중립"},{n:"세포와 물질대사"},{n:"전자기와 양자"},{n:"화학 반응의 세계"},{n:"국제 경제"},{n:"논리와 사고"},{n:"디지털 논리 회로"},{n:"정보 통신"},{n:"지식 재산 일반"},{n:"IB 역사 HL Ⅲ"},{n:"마케팅과 광고"},{n:"빅 히스토리"},{n:"전문 수학"},{n:"선형대수학"},{n:"IB 수학 분석과 접근 HL Ⅲ"},{n:"세계 문화와 영어"},{n:"미술 창작"},{n:"제품 디자인"},{n:"영화 감상과 비평"},{n:"조형 탐구"},{n:"시창⋅청음"},{n:"중국 언어와 역사의 이해1"},{n:"고급 체육 전공 실기"},{n:"육상"}]},
     { id:"g31_inc", label:"3학점 순증 선택 (선택 사항)", type:"single", credits:3, optional:true, note:"0~1과목 선택",
-      courses:[{n:"농업 이해"},{n:"생활과학 탐구"},{n:"융합지성사"},{n:"교육의 이해"},{n:"고급 미적분"},{n:"데이터 과학"},{n:"기본 유기화학"},{n:"보건"},{n:"식품과 영양"},{n:"국제 경제"},{n:"로봇과 공학세계"},{n:"VR⋅AR 콘텐츠 제작"},{n:"심화 체조 전공 실기"},{n:"IB 지식이론 Ⅲ"}]},
+      courses:[{n:"농업 이해"},{n:"생활과학 탐구"},{n:"융합지성사"},{n:"교육의 이해"},{n:"고급 미적분"},{n:"데이터 과학"},{n:"기본 유기화학"},{n:"보건"},{n:"식품과 영양"},{n:"통계와 사회"},{n:"로봇과 공학세계"},{n:"VR⋅AR 콘텐츠 제작"},{n:"심화 체조 전공 실기"},{n:"IB 지식이론 Ⅲ"}]},
   ]
 },
 {
@@ -814,13 +875,13 @@ const SEMESTERS = [
     { id:"g32_kor", label:"국어 선택", type:"single", credits:4, note:"1과목 선택",
       courses:[{n:"언어생활 탐구"},{n:"IB 언어와 문학 SL Ⅳ"}]},
     { id:"g32_mat", label:"수학/기타 선택", type:"single", credits:3, note:"1과목 선택 (3학점)",
-      courses:[{n:"고급 대수"},{n:"실용 통계"},{n:"IB 경제 SL Ⅳ"},{n:"미술 전공 실기"},{n:"스포츠 경기 기술"}]},
+      courses:[{n:"고급 대수"},{n:"융합사고수학"},{n:"IB 경제 SL Ⅳ"},{n:"미술 전공 실기"},{n:"스포츠 경기 기술"}]},
     { id:"g32_eng", label:"영어 선택", type:"single", credits:4, note:"1과목 선택",
       courses:[{n:"심화 영어"},{n:"IB 영어 HL Ⅳ"},{n:"IB 영어 SL Ⅳ"}]},
     { id:"g32_free", label:"자유 선택", type:"multi", credits:4, maxSel:3, note:"3과목 선택 (12학점)",
-      courses:[{n:"고급 물리학"},{n:"고급 생명과학"},{n:"고급 화학"},{n:"물리학 주제 토론"},{n:"화학 주제 토론"},{n:"생명과학 주제 토론"},{n:"과학 교양"},{n:"IB 물리학 HL Ⅳ"},{n:"IB 일반화학 HL Ⅳ"},{n:"IB 일반화학 SL Ⅳ"},{n:"프런티어 사이언스"},{n:"주제 탐구 독서"},{n:"기초 조리"},{n:"발명과 디자인"},{n:"컴퓨터 구조"},{n:"컴퓨터 네트워크"},{n:"IB 역사 HL Ⅳ"},{n:"세계시민교육"},{n:"이산 수학"},{n:"AP미적분학Ⅰ"},{n:"IB 수학 분석과 접근 SL Ⅳ"},{n:"IB 수학 분석과 접근 HL Ⅳ"},{n:"미디어 영어"},{n:"제품 디자인"},{n:"미술 감상과 비평"},{n:"무대 미술과 기술"},{n:"중국 언어와 역사의 이해2"},{n:"일본 문화"},{n:"스포츠 경기 체력"},{n:"체조"}]},
+      courses:[{n:"실용 통계"},{n:"고급 물리학"},{n:"고급 생명과학"},{n:"고급 화학"},{n:"물리학 주제 토론"},{n:"화학 주제 토론"},{n:"생명과학 주제 토론"},{n:"과학 교양"},{n:"IB 물리학 HL Ⅳ"},{n:"IB 일반화학 HL Ⅳ"},{n:"IB 일반화학 SL Ⅳ"},{n:"프런티어 사이언스"},{n:"주제 탐구 독서"},{n:"기초 조리"},{n:"발명과 디자인"},{n:"컴퓨터 구조"},{n:"컴퓨터 네트워크"},{n:"IB 역사 HL Ⅳ"},{n:"삶과 종교"},{n:"역사로 탐구하는 현대 세계"},{n:"기후변화와 지속가능한 세계"},{n:"AP미적분학Ⅰ"},{n:"IB 수학 분석과 접근 HL Ⅳ"},{n:"미디어 영어"},{n:"제품 디자인"},{n:"미술 감상과 비평"},{n:"무대 미술과 기술"},{n:"중국 언어와 역사의 이해2"},{n:"스포츠 경기 체력"},{n:"체조"}]},
     { id:"g32_inc", label:"3학점 순증 선택 (선택 사항)", type:"single", credits:3, optional:true, note:"0~1과목 선택",
-      courses:[{n:"농업 이해"},{n:"생활과학 탐구"},{n:"교육의 이해"},{n:"미디어와 사회"},{n:"고급 미적분"},{n:"생태와 환경"},{n:"인공지능 기초"},{n:"도자기 공예"},{n:"심화 육상 단거리 전공 실기"},{n:"IB 지식이론 Ⅳ"}]},
+      courses:[{n:"농업 이해"},{n:"생활과학 탐구"},{n:"교육의 이해"},{n:"뉴스와 미디어"},{n:"고급 미적분"},{n:"생태와 환경"},{n:"인공지능 기초"},{n:"도자기 공예"},{n:"심화 육상 단거리 전공 실기"},{n:"IB 지식이론 Ⅳ"}]},
   ]
 },
 ];
@@ -845,10 +906,10 @@ const INDIVIDUAL_CHOICE = '개인별 선택';
 
 const RECOMMENDED_ROADMAPS = {
   수학: {
-    '2-1':{ g21_kor:'독서와 작문', g21_mat:'미적분Ⅰ', g21_eng:'영어Ⅰ', g21_exp:'수학과제 탐구', g21_free:['물리학','정보과학',INDIVIDUAL_CHOICE] },
-    '2-2':{ g22_kor:'문학', g22_mat:'확률과 통계', g22_eng:'영어Ⅱ', g22_exp:'융합과학 탐구', g22_free:['미적분Ⅱ','역학과 에너지','자료 구조'] },
+    '2-1':{ g21_kor:'독서와 작문', g21_mat:'미적분Ⅰ', g21_eng:'영어Ⅰ', g21_exp:'주제 탐구(R&E) 기초', g21_free:['물리학','정보과학',INDIVIDUAL_CHOICE] },
+    '2-2':{ g22_kor:'문학', g22_mat:'확률과 통계', g22_eng:'영어Ⅱ', g22_exp:'주제 탐구(R&E) 심화', g22_free:['미적분Ⅱ','역학과 에너지','자료 구조'] },
     '3-1':{ g31_kor:'화법과 언어', g31_mat:'기하', g31_eng:'영어 독해와 작문', g31_free:['선형대수학','디지털 논리 회로','전자기와 양자'], g31_inc:'고급 미적분' },
-    '3-2':{ g32_kor:'언어생활 탐구', g32_mat:'고급 대수', g32_eng:'심화 영어', g32_free:['AP미적분학Ⅰ','과학 교양','세계시민교육'], g32_inc:'인공지능 기초' }
+    '3-2':{ g32_kor:'언어생활 탐구', g32_mat:'고급 대수', g32_eng:'심화 영어', g32_free:['AP미적분학Ⅰ','과학 교양','기후변화와 지속가능한 세계'], g32_inc:INDIVIDUAL_CHOICE }
   },
   물리학: {
     '2-1':{ g21_kor:'독서와 작문', g21_mat:'미적분Ⅰ', g21_eng:'영어Ⅰ', g21_exp:'물리학 실험', g21_free:['물리학','화학','생명과학'] },
@@ -869,7 +930,7 @@ const RECOMMENDED_ROADMAPS = {
     '3-2':{ g32_kor:'언어생활 탐구', g32_mat:'고급 대수', g32_eng:'심화 영어', g32_free:['생명과학 주제 토론','과학 교양',INDIVIDUAL_CHOICE], g32_inc:INDIVIDUAL_CHOICE }
   },
   공학: {
-    '2-1':{ g21_kor:'독서와 작문', g21_mat:'미적분Ⅰ', g21_eng:'영어Ⅰ', g21_exp:'창의 공학 설계', g21_free:['물리학','화학','생명과학'] },
+    '2-1':{ g21_kor:'독서와 작문', g21_mat:'미적분Ⅰ', g21_eng:'영어Ⅰ', g21_exp:'물리학 실험', g21_free:['물리학','화학','창의 공학 설계'] },
     '2-2':{ g22_kor:'문학', g22_mat:'확률과 통계', g22_eng:'영어Ⅱ', g22_exp:'융합과학 탐구', g22_free:['역학과 에너지','물질과 에너지','미적분Ⅱ'] },
     '3-1':{ g31_kor:'화법과 언어', g31_mat:'기하', g31_eng:'영어 독해와 작문', g31_free:['지식 재산 일반','전자기와 양자','정보과학'], g31_inc:'고급 미적분' },
     '3-2':{ g32_kor:'언어생활 탐구', g32_mat:'고급 대수', g32_eng:'심화 영어', g32_free:['물리학 주제 토론','과학 교양','발명과 디자인'], g32_inc:INDIVIDUAL_CHOICE }
@@ -883,37 +944,37 @@ const RECOMMENDED_ROADMAPS = {
   인문학: {
     '2-1':{ g21_kor:'독서와 작문', g21_mat:'미적분Ⅰ', g21_eng:'영어Ⅰ', g21_exp:'경제', g21_free:['문학과 영상','세계사','현대사회와 윤리'] },
     '2-2':{ g22_kor:'문학', g22_mat:'확률과 통계', g22_eng:'영어Ⅱ', g22_exp:'사회문제 탐구', g22_free:['소설 창작','독서 토론과 글쓰기','사회 문제와 윤리'] },
-    '3-1':{ g31_kor:'화법과 언어', g31_mat:'기하', g31_eng:'영어 독해와 작문', g31_free:['빅 히스토리','논리와 사고','논술'], g31_inc:'융합지성사' },
-    '3-2':{ g32_kor:'언어생활 탐구', g32_mat:'실용 통계', g32_eng:'심화 영어', g32_free:['세계시민교육','주제 탐구 독서','과학 교양'], g32_inc:'미디어와 사회' }
+    '3-1':{ g31_kor:'화법과 언어', g31_mat:['기하','통합수학Ⅰ'], g31_eng:'영어 독해와 작문', g31_free:['논술','문학 감상과 비평','논리와 사고'], g31_inc:'융합지성사' },
+    '3-2':{ g32_kor:'언어생활 탐구', g32_mat:'융합사고수학', g32_eng:'심화 영어', g32_free:['삶과 종교','역사로 탐구하는 현대 세계','주제 탐구 독서'], g32_inc:'뉴스와 미디어' }
   },
   국제어문: {
     '2-1':{ g21_kor:'독서와 작문', g21_mat:'미적분Ⅰ', g21_eng:'영어Ⅰ', g21_exp:'경제', g21_free:['영미 문학 읽기','중국어 회화','세계사'] },
-    '2-2':{ g22_kor:'문학', g22_mat:'확률과 통계', g22_eng:'영어Ⅱ', g22_exp:'사회문제 탐구', g22_free:['영어 발표와 토론','심화 중국어','영화 제작 실습'] },
-    '3-1':{ g31_kor:'화법과 언어', g31_mat:'기하', g31_eng:'영어 독해와 작문', g31_free:['세계 문화와 영어','중국 언어와 역사의 이해1','논리와 사고'], g31_inc:'교육의 이해' },
-    '3-2':{ g32_kor:'언어생활 탐구', g32_mat:'실용 통계', g32_eng:'심화 영어', g32_free:['세계시민교육','중국 언어와 역사의 이해2','과학 교양'], g32_inc:'미디어와 사회' }
+    '2-2':{ g22_kor:'문학', g22_mat:'확률과 통계', g22_eng:'영어Ⅱ', g22_exp:'주제 탐구(R&E) 심화', g22_free:['영어 발표와 토론','심화 중국어','영화 제작 실습'] },
+    '3-1':{ g31_kor:'화법과 언어', g31_mat:['기하','통합수학Ⅰ'], g31_eng:'영어 독해와 작문', g31_free:['세계 문화와 영어','중국 언어와 역사의 이해1','논리와 사고'], g31_inc:'교육의 이해' },
+    '3-2':{ g32_kor:'언어생활 탐구', g32_mat:'융합사고수학', g32_eng:'심화 영어', g32_free:[INDIVIDUAL_CHOICE,'중국 언어와 역사의 이해2','과학 교양'], g32_inc:'뉴스와 미디어' }
   },
   사회과학: {
     '2-1':{ g21_kor:'독서와 작문', g21_mat:'미적분Ⅰ', g21_eng:'영어Ⅰ', g21_exp:'경제', g21_free:['사회와 문화','정치','현대사회와 윤리'] },
-    '2-2':{ g22_kor:'문학', g22_mat:'확률과 통계', g22_eng:'영어Ⅱ', g22_exp:'사회문제 탐구', g22_free:['미래 사회학','국제 정치','사회 문제와 윤리'] },
-    '3-1':{ g31_kor:'화법과 언어', g31_mat:'기하', g31_eng:'영어 독해와 작문', g31_free:['통계와 사회','논리와 사고','세계시민과 지리'], g31_inc:'국제 경제' },
-    '3-2':{ g32_kor:'언어생활 탐구', g32_mat:'실용 통계', g32_eng:'심화 영어', g32_free:['세계시민교육','주제 탐구 독서','과학 교양'], g32_inc:'미디어와 사회' }
+    '2-2':{ g22_kor:'문학', g22_mat:'확률과 통계', g22_eng:'영어Ⅱ', g22_exp:'사회문제 탐구', g22_free:['사회학 개론','국제 정치','사회 문제와 윤리'] },
+    '3-1':{ g31_kor:'화법과 언어', g31_mat:['기하','통합수학Ⅰ'], g31_eng:'영어 독해와 작문', g31_free:['국제 경제','논리와 사고','빅 히스토리'], g31_inc:'통계와 사회' },
+    '3-2':{ g32_kor:'언어생활 탐구', g32_mat:'융합사고수학', g32_eng:'심화 영어', g32_free:['삶과 종교','역사로 탐구하는 현대 세계','기후변화와 지속가능한 세계'], g32_inc:'뉴스와 미디어' }
   },
   경제경영: {
     '2-1':{ g21_kor:'독서와 작문', g21_mat:'미적분Ⅰ', g21_eng:'영어Ⅰ', g21_exp:'경제', g21_free:['기업과 경영','사회와 문화','세계시민과 지리'] },
     '2-2':{ g22_kor:'문학', g22_mat:'확률과 통계', g22_eng:'영어Ⅱ', g22_exp:'사회문제 탐구', g22_free:['현대 경제 탐구','국제 정치','금융과 경제생활'] },
-    '3-1':{ g31_kor:'화법과 언어', g31_mat:'기하', g31_eng:'영어 독해와 작문', g31_free:['마케팅과 광고','경제 수학','논리와 사고'], g31_inc:'국제 경제' },
-    '3-2':{ g32_kor:'언어생활 탐구', g32_mat:'실용 통계', g32_eng:'심화 영어', g32_free:['세계시민교육','주제 탐구 독서','과학 교양'], g32_inc:'미디어와 사회' }
+    '3-1':{ g31_kor:'화법과 언어', g31_mat:['기하','통합수학Ⅰ'], g31_eng:'영어 독해와 작문', g31_free:['마케팅과 광고','국제 경제','경제 수학'], g31_inc:'통계와 사회' },
+    '3-2':{ g32_kor:'언어생활 탐구', g32_mat:'융합사고수학', g32_eng:'심화 영어', g32_free:['삶과 종교','역사로 탐구하는 현대 세계','기후변화와 지속가능한 세계'], g32_inc:'뉴스와 미디어' }
   },
   예술: {
     '2-1':{ g21_kor:'독서와 작문', g21_mat:'미적분Ⅰ', g21_eng:'영어Ⅰ', g21_exp:'미디어 콘텐츠 일반', g21_free:['미술 매체 탐구','시각 디자인','사회와 문화'] },
-    '2-2':{ g22_kor:'문학', g22_mat:'확률과 통계', g22_eng:'영어Ⅱ', g22_exp:'음악과 미디어', g22_free:['드로잉','색채 디자인','영화 제작 실습'] },
+    '2-2':{ g22_kor:'문학', g22_mat:'확률과 통계', g22_eng:'영어Ⅱ', g22_exp:'주제 탐구(R&E) 심화', g22_free:['드로잉','색채 디자인','영화 제작 실습'] },
     '3-1':{ g31_kor:'화법과 언어', g31_mat:['기하','통합수학Ⅰ'], g31_eng:'영어 독해와 작문', g31_free:['미술 창작','조형 탐구','제품 디자인'], g31_inc:'VR⋅AR 콘텐츠 제작' },
-    '3-2':{ g32_kor:'언어생활 탐구', g32_mat:'미술 전공 실기', g32_eng:'심화 영어', g32_free:['미술 감상과 비평','과학 교양','세계시민교육'], g32_inc:'도자기 공예' }
+    '3-2':{ g32_kor:'언어생활 탐구', g32_mat:'미술 전공 실기', g32_eng:'심화 영어', g32_free:['미술 감상과 비평','과학 교양','삶과 종교'], g32_inc:'도자기 공예' }
   },
   체육: {
-    '2-1':{ g21_kor:'독서와 작문', g21_mat:'미적분Ⅰ', g21_eng:'영어Ⅰ', g21_exp:'스포츠 행정 및 경영', g21_free:['기초 체육 전공 실기','스포츠 개론','운동과 건강'] },
-    '2-2':{ g22_kor:'문학', g22_mat:'확률과 통계', g22_eng:'영어Ⅱ', g22_exp:'스포츠 생리의학', g22_free:['심화 체육 전공 실기','스포츠 경기 분석','스포츠 교육'] },
-    '3-1':{ g31_kor:'화법과 언어', g31_mat:'기하', g31_eng:'영어 독해와 작문', g31_free:['고급 체육 전공 실기','육상','사회와 문화'], g31_inc:'심화 체조 전공 실기' },
+    '2-1':{ g21_kor:'독서와 작문', g21_mat:'미적분Ⅰ', g21_eng:'영어Ⅰ', g21_exp:'주제 탐구(R&E) 기초', g21_free:['기초 체육 전공 실기','스포츠 개론','운동과 건강'] },
+    '2-2':{ g22_kor:'문학', g22_mat:'확률과 통계', g22_eng:'영어Ⅱ', g22_exp:'주제 탐구(R&E) 심화', g22_free:['심화 체육 전공 실기','스포츠 경기 분석','스포츠 교육'] },
+    '3-1':{ g31_kor:'화법과 언어', g31_mat:['기하','통합수학Ⅰ'], g31_eng:'영어 독해와 작문', g31_free:['고급 체육 전공 실기','육상','사회와 문화'], g31_inc:'심화 체조 전공 실기' },
     '3-2':{ g32_kor:'언어생활 탐구', g32_mat:'스포츠 경기 기술', g32_eng:'심화 영어', g32_free:['스포츠 경기 체력','체조','과학 교양'], g32_inc:'심화 육상 단거리 전공 실기' }
   },
   국제자연과학: {
@@ -923,10 +984,10 @@ const RECOMMENDED_ROADMAPS = {
     '3-2':{ g32_kor:'IB 언어와 문학 SL Ⅳ', g32_mat:'IB 경제 SL Ⅳ', g32_eng:'IB 영어 SL Ⅳ', g32_free:['IB 수학 분석과 접근 HL Ⅳ','IB 물리학 HL Ⅳ','IB 일반화학 HL Ⅳ'], g32_inc:'IB 지식이론 Ⅳ' }
   },
   국제인문사회: {
-    '2-1':{ g21_kor:'IB 언어와 문학 SL Ⅰ', g21_mat:'IB 수학 분석과 접근 SL Ⅰ', g21_eng:'IB 영어 HL Ⅰ', g21_exp:'IB 지식이론 Ⅰ', g21_free:['IB 경제 SL Ⅰ','IB 역사 HL Ⅰ','IB 일반화학 SL Ⅰ'] },
-    '2-2':{ g22_kor:'IB 언어와 문학 SL Ⅱ', g22_mat:'IB 수학 분석과 접근 SL Ⅱ', g22_eng:'IB 영어 HL Ⅱ', g22_exp:'IB 지식이론 Ⅱ', g22_free:['IB 경제 SL Ⅱ','IB 역사 HL Ⅱ','IB 일반화학 SL Ⅱ'] },
-    '3-1':{ g31_kor:'IB 언어와 문학 SLⅢ', g31_mat:'IB 경제 SL Ⅲ', g31_eng:'IB 영어 HL Ⅲ', g31_free:['IB 수학 분석과 접근 SL Ⅲ','IB 역사 HL Ⅲ','IB 일반화학 SL Ⅲ'], g31_inc:'IB 지식이론 Ⅲ' },
-    '3-2':{ g32_kor:'IB 언어와 문학 SL Ⅳ', g32_mat:'IB 경제 SL Ⅳ', g32_eng:'IB 영어 HL Ⅳ', g32_free:['IB 수학 분석과 접근 SL Ⅳ','IB 역사 HL Ⅳ','IB 일반화학 SL Ⅳ'], g32_inc:'IB 지식이론 Ⅳ' }
+    '2-1':{ g21_kor:'IB 언어와 문학 SL Ⅰ', g21_mat:'IB 수학 분석과 접근 HL Ⅰ', g21_eng:'IB 영어 HL Ⅰ', g21_exp:'IB 지식이론 Ⅰ', g21_free:['IB 경제 SL Ⅰ','IB 역사 HL Ⅰ','IB 일반화학 SL Ⅰ'] },
+    '2-2':{ g22_kor:'IB 언어와 문학 SL Ⅱ', g22_mat:'IB 수학 분석과 접근 HL Ⅱ', g22_eng:'IB 영어 HL Ⅱ', g22_exp:'IB 지식이론 Ⅱ', g22_free:['IB 경제 SL Ⅱ','IB 역사 HL Ⅱ','IB 일반화학 SL Ⅱ'] },
+    '3-1':{ g31_kor:'IB 언어와 문학 SLⅢ', g31_mat:'IB 경제 SL Ⅲ', g31_eng:'IB 영어 HL Ⅲ', g31_free:['IB 수학 분석과 접근 HL Ⅲ','IB 역사 HL Ⅲ','IB 일반화학 SL Ⅲ'], g31_inc:'IB 지식이론 Ⅲ' },
+    '3-2':{ g32_kor:'IB 언어와 문학 SL Ⅳ', g32_mat:'IB 경제 SL Ⅳ', g32_eng:'IB 영어 HL Ⅳ', g32_free:['IB 수학 분석과 접근 HL Ⅳ','IB 역사 HL Ⅳ','IB 일반화학 SL Ⅳ'], g32_inc:'IB 지식이론 Ⅳ' }
   }
 };
 
@@ -941,9 +1002,10 @@ const PREREQS = {
   '선형대수학':       { courses:['미적분Ⅰ'], type:'all' },
   '전문 수학':        { courses:['미적분Ⅰ'], type:'all' },
   '통합수학Ⅰ':       { courses:['미적분Ⅰ','확률과 통계'], type:'all' },
+  '융합사고수학':     { courses:['미적분Ⅰ','확률과 통계'], type:'all' },
   '실용 통계':        { courses:['확률과 통계'], type:'all' },
   '심화 중국어':      { courses:['중국어 회화'], type:'all' },
-  '일본어 회화Ⅱ':    { courses:['일본어 회화Ⅰ'], type:'all' },
+  '심화 일본어':      { courses:['일본어 회화'], type:'all' },
   '역학과 에너지':    { courses:['물리학'], type:'all' },
   '전자기와 양자':    { courses:['물리학'], type:'all' },
   '고급 물리학':      { courses:['역학과 에너지','전자기와 양자'], type:'all' },
@@ -963,9 +1025,6 @@ const PREREQS = {
   'IB 언어와 문학 SL Ⅱ':          { courses:['IB 언어와 문학 SL Ⅰ'], type:'all' },
   'IB 언어와 문학 SLⅢ':           { courses:['IB 언어와 문학 SL Ⅱ'], type:'all' },
   'IB 언어와 문학 SL Ⅳ':          { courses:['IB 언어와 문학 SLⅢ'], type:'all' },
-  'IB 수학 분석과 접근 SL Ⅱ':     { courses:['IB 수학 분석과 접근 SL Ⅰ'], type:'all' },
-  'IB 수학 분석과 접근 SL Ⅲ':     { courses:['IB 수학 분석과 접근 SL Ⅱ'], type:'all' },
-  'IB 수학 분석과 접근 SL Ⅳ':     { courses:['IB 수학 분석과 접근 SL Ⅲ'], type:'all' },
   'IB 수학 분석과 접근 HL Ⅱ':     { courses:['IB 수학 분석과 접근 HL Ⅰ'], type:'all' },
   'IB 수학 분석과 접근 HL Ⅲ':     { courses:['IB 수학 분석과 접근 HL Ⅱ'], type:'all' },
   'IB 수학 분석과 접근 HL Ⅳ':     { courses:['IB 수학 분석과 접근 HL Ⅲ'], type:'all' },
@@ -1531,6 +1590,7 @@ function calcSubjectCredits() {
   let kor=BASE_KOR, mat=BASE_MAT, eng=BASE_ENG; // 1학년 기본 학점 포함
   SEMESTERS.forEach(sem => {
     sem.groups.forEach(grp => {
+      if(/_inc$/.test(grp.id)) return; // 순증선택은 174학점 초과분이라 81학점 상한과 별도 규정(국영수 비율 50%)으로 관리됨
       selections[grp.id].forEach(name => {
         const s = getCourseSubject(name, grp.id);
         if(s==='kor') kor += grp.credits;
@@ -1626,10 +1686,13 @@ function wouldExceedLimit(groupId, addCourse, removeCourse=null) {
   const sRem = removeCourse ? getCourseSubject(removeCourse, groupId) : null;
   const cur = calcSubjectCredits();
 
-  // Rule 1: 국·영·수 합계 81학점 초과 금지
+  // Rule 1: 국·영·수 합계 81학점 초과 금지 (순증선택은 174학점 초과분이라 별도 규정(Rule 2)으로 관리되므로 제외)
+  const isIncGroup = /_inc$/.test(groupId);
   let newTotal = cur.total;
-  if(sRem) newTotal -= grp.credits;
-  if(sAdd) newTotal += grp.credits;
+  if(!isIncGroup) {
+    if(sRem) newTotal -= grp.credits;
+    if(sAdd) newTotal += grp.credits;
+  }
   if(newTotal > KEM_LIMIT) {
     return `국·영·수 이수학점 합계가 81학점을 초과합니다 (현재 ${cur.total}학점 → ${newTotal}학점)`;
   }
@@ -1866,6 +1929,21 @@ function tutPrev() {
 }
 
 // ═══════════════════════════════════════════════════════
+// PRIVACY POLICY POPUP
+// ═══════════════════════════════════════════════════════
+function openPrivacy() {
+  document.getElementById('privOverlay').classList.add('open');
+}
+
+function closePrivacy() {
+  document.getElementById('privOverlay').classList.remove('open');
+}
+
+function handlePrivOverlayClick(e) {
+  if (e.target.id === 'privOverlay') closePrivacy();
+}
+
+// ═══════════════════════════════════════════════════════
 // ERROR POPUP
 // ═══════════════════════════════════════════════════════
 function showError(msg, stack, source) {
@@ -1954,7 +2032,7 @@ function buildRoadmapRec() {
   var cols = ['2-1','2-2','3-1','3-2'].map(function(semId) {
     var semMap = map[semId];
     var prefix = 'g' + semId.replace('-','') + '_';
-    var grpOrder = [prefix+'kor', prefix+'mat', prefix+'eng', prefix+'exp', prefix+'free', prefix+'inc'];
+    var grpOrder = [prefix+'kor', prefix+'mat', prefix+'eng', prefix+'free', prefix+'exp', prefix+'inc'];
     var semHtml = '';
     if (!semMap) {
       semHtml = '<div class="rr-empty">별도 추천 예시 없음<br><small style="font-size:9px;display:block;margin-top:4px">자유롭게 선택하세요</small></div>';
